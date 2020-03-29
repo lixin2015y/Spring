@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+
+    <!--set方法注入-->
+    <bean id="car1" class="com.spring.autowire.Car">
+        <property name="name" value="一起"></property>
+        <property name="brand" value="宝马"></property>
+    </bean>
+    <bean id="address" class="com.spring.autowire.Address">
+        <property name="location" value="咸阳北路"></property>
+    </bean>
+    <bean id="person" class="com.spring.autowire.Person" autowire="byType">
+        <property name="name" value="张三"></property>
+    </bean>
+
+</beans>

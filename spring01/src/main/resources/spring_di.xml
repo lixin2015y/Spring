@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+
+    <!--set方法注入-->
+    <bean id="car" class="com.spring.di.Car">
+        <property name="brand" value="通用"></property>
+        <property name="crop" value="义气"></property>
+        <property name="price" value="500000"></property>
+    </bean>
+
+    <bean id="car2" class="com.spring.di.Car">
+        <constructor-arg value="宝马"></constructor-arg>
+        <constructor-arg value="华晨"></constructor-arg>
+        <constructor-arg value="4500000"></constructor-arg>
+    </bean>
+
+    <bean id="car3" class="com.spring.di.Car">
+        <constructor-arg value="宝马" index="0"></constructor-arg>
+        <constructor-arg value="4500000" index="2"></constructor-arg>
+        <constructor-arg value="华晨" index="1"></constructor-arg>
+    </bean>
+
+    <bean id="car4" class="com.spring.di.Car">
+        <constructor-arg value="宝马" index="0" type="java.lang.String"></constructor-arg>
+        <constructor-arg value="4500000" index="2" type="java.lang.Double"></constructor-arg>
+        <constructor-arg value="华晨" index="1" type="java.lang.String"></constructor-arg>
+    </bean>
+
+    <!--使用p命名空间-->
+    <bean id="car5" class="com.spring.di.Car" p:brand="长安" p:price="456677" p:crop="一气"/>
+
+    <!--使用字面量来解决特殊字符问题-->
+    <bean id="car6" class="com.spring.di.Car">
+        <property name="brand">
+            <!--            <value><![CDATA[]]></value>-->
+            <value>''asd\123\/adsf</value>
+        </property>
+    </bean>
+
+    <bean id="person" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="car" ref="car4"></property>
+    </bean>
+
+    <!--内部bean-->
+    <bean id="person1" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="car">
+            <bean class="com.spring.di.Car">
+                <property name="brand" value="宝马"></property>
+                <property name="price" value="1414"></property>
+            </bean>
+        </property>
+    </bean>
+
+    <!--级联属性赋值-->
+    <bean id="person2" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="car">
+            <bean class="com.spring.di.Car">
+                <property name="brand" value="宝马"></property>
+                <property name="price" value="1414"></property>
+            </bean>
+        </property>
+        <property name="car.crop" value="上海一汽"></property>
+    </bean>
+
+    <!--设置空值-->
+    <bean id="person3" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="car">
+            <null/>
+        </property>
+    </bean>
+
+    <!--集合属性-->
+    <bean id="person4" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="car">
+            <null/>
+        </property>
+        <property name="cars">
+            <list>
+                <ref bean="car2"></ref>
+                <bean class="com.spring.di.Car">
+                    <property name="brand" value="宝马"></property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="person5" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="carMap">
+            <map>
+                <entry key="AA" value-ref="car2"></entry>
+                <entry key="BB" value-ref="car4"></entry>
+                <entry key="CC" value-ref="car5"></entry>
+            </map>
+        </property>
+    </bean>
+
+    <!--集合bean-->
+    <util:list id="listBean">
+        <ref bean="car"></ref>
+        <ref bean="car4"></ref>
+<!--        <ref bean="person1"></ref>-->
+    </util:list>
+
+    <bean id="person6" class="com.spring.di.Person">
+        <property name="name" value="李新"></property>
+        <property name="cars" ref="listBean"></property>
+    </bean>
+</beans>

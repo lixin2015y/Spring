@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+    <!--继承关系-->
+    <bean id="car" class="com.spring.di.Car" abstract="true">
+        <property name="brand" value="asdasdasd"></property>
+        <property name="crop" value="bbbbb"></property>
+    </bean>
+
+    <bean id="car2" parent="car">
+        <property name="price" value="1231"></property>
+    </bean>
+
+    <!--先检测被依赖的bean-->
+    <bean id="car3" parent="car" depends-on="car4">
+        <property name="price" value="1231"></property>
+    </bean>
+
+    <bean id="car4" class="com.spring.di.Car" scope="prototype"></bean>
+
+</beans>
