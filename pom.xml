@@ -12,6 +12,7 @@
         <module>spring01</module>
         <module>spring02</module>
         <module>springMvc</module>
+        <module>javaNote</module>
     </modules>
 
 
