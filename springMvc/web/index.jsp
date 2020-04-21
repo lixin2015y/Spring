@@ -11,7 +11,12 @@
     <title>Title</title>
 </head>
 <body>
-
+<form action="/upload" enctype="multipart/form-data" method="post">
+    <input type="file" name="uploadFile">
+    <input type="text" name="desc">
+    <input type="submit" value="测试文件上传">
+</form>
+<br/>
 <form action="/testPojo">
     <input type="text" name="userName" value="12312312">
     <input type="text" name="age" value="12312312">
