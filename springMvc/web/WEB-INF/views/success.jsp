@@ -12,5 +12,6 @@
 </head>
 <body>
         <h1>success!!!</h1>
+        <h2>username:${requestScope.userName}</h2>
 </body>
 </html>

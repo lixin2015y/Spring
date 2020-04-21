@@ -36,5 +36,10 @@
 <form action="/order/1" method="post"><input type="hidden" name="_method" value="PUT"> <input type="submit" value="put">
 </form>
 <br/>
+<a href="/testModalAndView?userName=李新"> 测试modalAndView</a><br/>
+<a href="/getAllUser">拿到所有的User</a><br/>
+<a href="/download">下载私密图片</a><br/>
+
+
 </body>
 </html>
