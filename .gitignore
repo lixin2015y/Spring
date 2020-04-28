@@ -16,7 +16,6 @@
 *.iml
 *.ipr
 target
-spring02/target
 ### NetBeans ###
 /nbproject/private/
 /build/
