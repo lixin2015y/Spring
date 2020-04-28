@@ -29,6 +29,25 @@
         <property name="suffix" value=".jsp"></property>
     </bean>
 
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8"></property>
+        <property name="maxUploadSize" value="10484760"></property>
+    </bean>
+
+    <!--配置拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/info"/>
+            <ref bean="webInterceptor"></ref>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/info"/>
+            <ref bean="secondInterceptor"></ref>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
     <mvc:annotation-driven/>
 
 </beans>

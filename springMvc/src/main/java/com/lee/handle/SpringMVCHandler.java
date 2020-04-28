@@ -11,6 +11,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -69,7 +72,23 @@ public class SpringMVCHandler {
 
 
     @PostMapping("upload")
-    String upload(@RequestParam String desc, @RequestParam("uploadFile") MultipartFile file) {
+    String upload(@RequestParam("desc") String desc, @RequestParam("uploadFile") MultipartFile file, HttpSession session) throws IOException {
+
+        String fileName = file.getOriginalFilename();
+        final InputStream in = file.getInputStream();
+        //获取服务器端upload路径
+        final ServletContext servletContext = session.getServletContext();
+        final String upload = servletContext.getRealPath("uploads");
+        final File file1 = new File(upload + "/" + fileName);
+        FileOutputStream fileOutputStream = new FileOutputStream(file1);
+
+        //写文件
+        int i;
+        while ((i = in.read()) != -1) {
+            fileOutputStream.write(i);
+        }
+        in.close();
+        fileOutputStream.close();
         return "success";
     }
 }

@@ -4,6 +4,14 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
     <!--字符编码过滤器-->
     <filter>
         <filter-name>characterEncodingFilter</filter-name>
@@ -15,6 +23,15 @@
         <filter-name>hiddenHttpMethodFilter</filter-name>
         <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
     </filter>
+
+
+    <!--实现监听器-->
+<!--    <listener>-->
+<!--        <listener-class>com.lee.listener.MyServletContextListener</listener-class>-->
+<!--    </listener>-->
+
+
+
 
     <filter-mapping>
         <filter-name>hiddenHttpMethodFilter</filter-name>
@@ -36,9 +53,19 @@
         <!--指定servlet的创建时机，在服务器启动时加载-->
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>myServlet</servlet-name>
+        <servlet-class>com.lee.servlet.MyServlet</servlet-class>
+    </servlet>
     <!--配置请求的映射-->
     <servlet-mapping>
         <servlet-name>springDispatcherServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>myServlet</servlet-name>
+        <url-pattern>/myServlet</url-pattern>
+    </servlet-mapping>
+
+
 </web-app>
