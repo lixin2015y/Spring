@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class ArrayListTest {
 
@@ -29,6 +30,9 @@ public class ArrayListTest {
         System.out.println(target.getClass());  // class [Ltest.User;
         target[0] = new Object();   // java.lang.ArrayStoreException: java.lang.Object
         System.out.println(list.toArray().getClass());
+
+        list.listIterator().forEachRemaining(o -> System.out.println(o));
+
     }
 
 
