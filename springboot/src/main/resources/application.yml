@@ -1,0 +1,7 @@
+user:
+  id: 1
+  name: lixin
+  email: lixin2015y@163.com
+  hobby:
+    - 篮球
+    - 足球
