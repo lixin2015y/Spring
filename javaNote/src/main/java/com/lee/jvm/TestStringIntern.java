@@ -12,9 +12,11 @@ public class TestStringIntern {
         String b = "123";
         System.out.println(a == b);
 
-        String c = "d" ;
-        String d = new String( "d" ).intern() ;
-        System.out.println( c == d);
+        String c = "d";
+        String d = new String("d").intern();
+        String d2 = new String("d");
+        System.out.println(c == d);
+        System.out.println(d == d2);
 
 
         Integer e = new Integer(32);
