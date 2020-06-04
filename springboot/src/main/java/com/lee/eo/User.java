@@ -1,4 +1,4 @@
-package com.lee.controller.com.lee.eo;
+package com.lee.eo;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
