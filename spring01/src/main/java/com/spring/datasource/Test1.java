@@ -22,8 +22,8 @@ public class Test1 {
 
     @Test
     public void test2() throws SQLException {
-        final DataSource dataSource = context.getBean("dataSource", DataSource.class);
-        final Connection connection = dataSource.getConnection();
+        DataSource dataSource = context.getBean("dataSource", DataSource.class);
+        Connection connection = dataSource.getConnection();
     }
 
     @Test

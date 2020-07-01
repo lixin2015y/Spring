@@ -31,7 +31,7 @@
         <property name="driverClass" value="${jdbc.driverClass}"/>
         <property name="user" value="${jdbc.user}"/>
         <property name="password" value="${jdbc.password}"/>
-        <property name="i nitialPoolSize" value="${jdbc.initialPoolSize}"/>
+        <property name="initialPoolSize" value="${jdbc.initialPoolSize}"/>
         <property name="maxPoolSize" value="${jdbc.maxPoolSize}"/>
     </bean>
 
