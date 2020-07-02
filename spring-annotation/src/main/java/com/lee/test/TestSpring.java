@@ -11,7 +11,6 @@ import java.util.Arrays;
 
 public class TestSpring {
 
-
     @Test
     public void test() {
         final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);

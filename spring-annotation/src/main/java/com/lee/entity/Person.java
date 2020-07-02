@@ -1,9 +1,13 @@
 package com.lee.entity;
 
+import org.springframework.beans.factory.annotation.Value;
+
 public class Person {
 
+    @Value("zhansanvalue")
     private String name;
 
+    @Value("${age}")
     private Integer age;
 
     public Person() {
