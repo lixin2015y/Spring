@@ -18,6 +18,5 @@ public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegi
             final RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(RainBow.class);
             registry.registerBeanDefinition("rainBow", rootBeanDefinition);
         }
-
     }
 }
