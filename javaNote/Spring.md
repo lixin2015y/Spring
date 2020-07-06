@@ -282,5 +282,171 @@ public class LogAspects {
 
 + 流程：
 
-  + 
+
+
+## IOC启动原理
+
+### 1、prepareRefresh()刷新前的预处理工作
+
++ 记录开始时间和设置容器状态
+
++ ```java
+  initPropertySources(); // 初始化一些属性设置;子类自定义个性化的属性设置方法；
+  ```
+
++ ```java
+  getEnvironment().validateRequiredProperties(); // 检验属性的合法等
+  ```
+
++ ```java
+  this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
+  // 保留容器一些早期的事件
+  ```
+
+### obtainFreshBeanFactory()获取BeanFactory
+
++ ```java
+  refreshBeanFactory();
+  // 创建BeanFactory，并设置一个序列化ID
+  ```
+
++ ```java
+  ConfigurableListableBeanFactoryreturn getBeanFactory();  
+  // 返回当前BeanFactory，类型为ConfigurableListableBeanFactory
+  ```
+
+
+
+### prepareBeanFactory(beanFactory)
+
+>  BeanFactory的预准备工作对,对BeanFactory进行一些设置
+
++ 设置BeanFactory的类加载器、支持表达式解析器..
+
++ 添加一个BeanPostProcessor
+
+  ```java
+  beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+  // 当前
+  ```
+
++ 设置忽略自动装配的接口
+
++ 设置可以解析自动装配的接口
+
+  > BeanFactory、ResourceLoader、ApplicationEventPublisher、ApplicationContext
+  >
+  > 这些对象可以在任意组件中实现自动转配
+
++ 添加BeanPostProcessor
+
+  ```java
+  beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
+  ```
+
++ 给BeanFactory中注册了一些能用的组件
+
+  + environment【ConfigurableEnvironment】、
+  + systemProperties【Map<String, Object>】、
+  + systemEnvironment【Map<String, Object>】
+
+
+
+### postProcessBeanFactory(beanFactory)
+
+> 一个保护方法，子类通过重写此方法可以实现一些beanFactory准备完成后的一些设置工作
+
+
+
+### invokeBeanFactoryPostProcessors(beanFactory)
+
+> 执行两个接口的方法BeanFactoryPostProcessor、BeanDefinitionRegistryPostProcessor
+
++ 先执行BeanDefinitionRegistryPostProcessors的方法
+  + 获取所有的BeanDefinitionRegistryPostProcessor；
+  + 看先执行实现了PriorityOrdered优先级接口的BeanDefinitionRegistryPostProcessors
+  + 在执行实现了Ordered顺序接口的BeanDefinitionRegistryPostProcessors
+  + 最后执行没有实现任何优先级或者是顺序接口的BeanDefinitionRegistryPostProcessors
++ 在执行BeanFactoryPostProcessor的方法
+  + 获取所有的BeanFactoryPostProcessor
+  + 看先执行实现了PriorityOrdered优先级接口的BeanFactoryPostProcessor、
+  + 在执行实现了Ordered顺序接口的BeanFactoryPostProcessor；
+  + 最后执行没有实现任何优先级或者是顺序接口的BeanFactoryPostProcessor；
+
+
+
+### registerBeanPostProcessors(beanFactory)注册Bean的后置处理器
+
+> 注册bean的后置处理器（拦截bean的创建过程）
+>
+> 不同的BeanPostProcessor在Bean创建前后的执行时机是不一样的
+
++ 获取所有的BeanPostProcessor（后置处理器都有有优先级，可以通过实现PriorityOrdered，活着的ordered
+
+  接口来实现优先级）
+
++ 先注册PriorityOrdered接口的BeanPostProcessor（将BeanPostProcessor加到BeanFactory中去）
+
++ 再注册Ordered接口的
+
++ 最后再注册没有实现任何接口的
+
++ 最终注册MergedBeanDefinitionPostProcessor类型的BeanPostProcessor
+
++ 注册一个ApplicationListenerDetector  用于在bean创建完成后检查是不是applicationListener，如果是将这个bean添加到容器中的applicationListener
+
+### initMessageSource()初始化MessageSource组件
+
+> 国际化功能，消息绑定，消息解析
+
++ 获取BeanFactory
++ 判断容器中是不是有MessageResouce的组件，如果有则赋值给messageSource属性，如果没有自己创建一个默认的
++ 将组件注册到容器中。以后获取的时候可以自动注入MessageSource，调用他的getMessage()
+
+### initApplicationEventMulticaster()初始化时间派发器
+
++ 获取BeanFactory
++ 从BeanFactory中获取applicationEventMulticaster的ApplicationEventMulticaster
++ 如果上一步没有配置；创建一个SimpleApplicationEventMulticaster
++ 将创建的时间派发器，添加刀BeanFactory中，以后在其他组件自动注入
+
+
+
+### onRefresh()
+
+> 空方法，子类重写这个方法，在容器刷新的时候可以自定义刷新容器方法
+
+### registerListeners()
+
+> 注册所有项目中的ApplicationListener
+
++ 从容器中拿到所有的ApplicationListener
+
++ 将每个监听器添加到事件派发器中；
+
+  ```java
+  getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
+  ```
+
++ 派发之前步骤产生的事件
+
+
+
+### finishBeanFactoryInitialization(beanFactory)
+
+> 初始化剩下的所有单例bean（Bean的初始化过程）
+
++ beanFactory.preInstantiateSingletons();
+  + 获取容器中的所有Bean，依次初始化和创建对象
+  + 获取Bean的定义信息
+  + 判断Bean是单例、不是抽象、不是懒加载的
+    + 在判断是不是工厂Bean，如果是工厂Bean，使用工厂方法创建Bean；如果不是通过getBean(beanName)来创建对象
++ getBean的步骤
+  + 调用doGetBean(beanName)
+    + 先从缓存中获取bean，如果能获取到，则表示档期那bean已经被创建过了，
+    + 缓存中获取不到，则创建对象
+    + 标记当前Bean已经被创建
+    + 获取Bean的定义信息，
+    + 获取当前bean所依赖的其他Bean，如果有则按照GetBean的方式获取
+    + 
 
