@@ -9,4 +9,7 @@
     <!--组件扫描-->
     <context:component-scan base-package="com.lee.bean"/>
 
+    <bean id="user" class="com.lee.entity.Person">
+
+    </bean>
 </beans>
