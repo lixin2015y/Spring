@@ -408,7 +408,7 @@ public class LogAspects {
 + 获取BeanFactory
 + 从BeanFactory中获取applicationEventMulticaster的ApplicationEventMulticaster
 + 如果上一步没有配置；创建一个SimpleApplicationEventMulticaster
-+ 将创建的时间派发器，添加刀BeanFactory中，以后在其他组件自动注入
++ 将创建的事件派发器，添加刀BeanFactory中，以后在其他组件自动注入
 
 
 

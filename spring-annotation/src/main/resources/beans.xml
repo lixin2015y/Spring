@@ -7,9 +7,13 @@
                http://www.springframework.org/schema/context/spring-context.xsd">
 
     <!--组件扫描-->
-    <context:component-scan base-package="com.lee.bean"/>
+    <context:component-scan base-package="com.lee.entity"/>
 
-    <bean id="user" class="com.lee.entity.Person">
+    <bean id="person" class="com.lee.entity.Person">
+
+    </bean>
+
+    <bean id="personFactoryBean" class="com.lee.entity.PersonFactoryBean">
 
     </bean>
 </beans>
