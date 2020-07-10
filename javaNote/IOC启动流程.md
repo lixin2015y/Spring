@@ -46,15 +46,18 @@
                 // 2、如果没有配置字符解析器，则创建一个字符解析器
                 // 3、初始化LoadTimeWeaverAware类型的Bean，AspectJ相关内容
                 // 4、让bean的定义信息不能再被修改
-				// 5、拿到所有bean的定义信息，如果是工厂bean，beanName前面加上&
-                // 6、调用getBean(beanFactory) 其实就是调用doGetBean方法
-                //    1）如果是FactoryBean方式创建的bean将beanName的&符去掉
-                //    2）判断当前bean是否已经创建过，如果创建过则放回普通bean或者factorybean创建的那个bean
-                //    3）如果方法的参数的args参数不为空，则代表当前调用是创建bean而不是获取bean
-                //    4）如果没创建则检查父容器是否存在档期内bean
-                //    5）如果是FactoryBean方式创建的bean将beanName的&符去掉
-                //    6）如果是FactoryBean方式创建的bean将beanName的&符去掉
-                //    7）如果是FactoryBean方式创建的bean将beanName的&符去掉
+                // 5、调用preInstantiateSingletons()
+				//    1）拿到所有bean的定义信息,初始化所有的非懒加载的 singleton beans
+                //    2）循环每一个类，合并父类的定义信息
+                //    3）判断是不是工厂bean，如果是一个简单的工厂bean，当前工厂类本身是不被初始化的（有条件可以初始化）
+                //    4）再次循环beannames,如果一个bean实现了SmartInitializingSingleton则在次进行回调
+                //    5）调用getBean创建对象，getBean内调用doGetBean创建对象
+                //        1)如果是一个工厂Bean则将&符去掉
+                //        2)检查下是不是已经创建过了，如果已经创建过，则直接从容器拿到bean对象
+                //        3)如果当前bean定义信息是存在的，而且存在负容器，调用父容器的getBean或者doGeatBean方法
+                //        4)经过前面的验证开始真正的创建bean
+                //        5)先初始化依赖的bean，判断依赖的bean是否又依赖当前bean（循环依赖）
+                //        6)判断是否是单例bean 
                 finishBeanFactoryInitialization(beanFactory);
 
 				// 
