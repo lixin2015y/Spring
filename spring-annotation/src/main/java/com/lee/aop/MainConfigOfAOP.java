@@ -8,7 +8,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  * 程序运行期间动态的将某段代码切入到某些方法的指定位置进行执行的编程方式
  */
 @EnableAspectJAutoProxy
-@ComponentScan(value = "com.lee.aop")
+@ComponentScan(value = {"com.lee.aop", "com.lee.entity"})
 @Configuration
 public class MainConfigOfAOP {
 
