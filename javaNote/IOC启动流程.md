@@ -6,7 +6,7 @@
 			prepareRefresh();
 
 			// 创建BeanFactory(DefaultListableBeanFactory)，
-            // 加载Bean的定义信息通过beanDefinition获得bean的配置信息，加到容器中，其实就是泛型Map
+            // 加载Bean的定义信息通过beanDefinition获得bean的配置信息，加到容器中，其实就是泛型ConcurrentHashMap<String,BeanDefinition> map
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// 设置 BeanFactory 的类加载器，添加几个 BeanPostProcessor，手动注册几个特殊的 bean
@@ -282,3 +282,53 @@ protected Object initializeBean(final String beanName, final Object bean, RootBe
 }
 ```
 
+
+
+
+
+### 1.prepareRefresh();
+
+> ```java
+> protected void prepareRefresh() {
+> 		// 记录开始时间
+> 		this.startupDate = System.currentTimeMillis();
+> 		this.closed.set(false);
+> 		this.active.set(true);
+> 
+> 		// 初始化带占位符的属性，默认的AnnotationConfigApplicationContext没有对此进行实现
+> 		initPropertySources();
+> 
+> 		// Validate that all properties marked as required are resolvable
+> 		getEnvironment().validateRequiredProperties();
+> 
+> 		// 初始化一个早期事件处理器
+> 		this.earlyApplicationEvents = new LinkedHashSet<>();
+> 	}
+> ```
+
+### 2.obtainFreshBeanFactory();
+
+?????????????????????????????????????刷新bean工厂是嘛???????????????????????????????????????????????????????????
+
+```java
+/*********************refreshBeanFactory();***********************/
+protected final void refreshBeanFactory() throws IllegalStateException {
+		if (!this.refreshed.compareAndSet(false, true)) {
+			throw new IllegalStateException(
+					"GenericApplicationContext does not support multiple refresh attempts: just call 'refresh' once");
+		}
+		this.beanFactory.setSerializationId(getId());
+	}
+```
+
+````java
+/*********************return getBeanFactory();***********************/
+public final ConfigurableListableBeanFactory getBeanFactory() {
+	// 此处可以直接返回，BeanFactory在创建ApplicationContext的构造方法的时候调用的工厂的构造方法已经创建
+    return this.beanFactory;
+	}
+````
+
+
+
+### 3.
