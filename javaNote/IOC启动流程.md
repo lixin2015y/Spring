@@ -1,3 +1,15 @@
+
+
+BeanPostProcessor的层级关系
+
+```java
+
+```
+
+
+
+
+
 ```java
 @Override
 	public void refresh() throws BeansException, IllegalStateException {
@@ -284,6 +296,18 @@ protected Object initializeBean(final String beanName, final Object bean, RootBe
 
 
 
+### 0.创建AnnotationConfigApplicationContext对象
+
+```java
+public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+		this(); // 创建一个BeanFactory，
+		register(componentClasses);
+		refresh();
+}
+```
+
+
+
 
 
 ### 1.prepareRefresh();
@@ -308,16 +332,27 @@ protected Object initializeBean(final String beanName, final Object bean, RootBe
 
 ### 2.obtainFreshBeanFactory();
 
-?????????????????????????????????????刷新bean工厂是嘛???????????????????????????????????????????????????????????
-
 ```java
 /*********************refreshBeanFactory();***********************/
-protected final void refreshBeanFactory() throws IllegalStateException {
-		if (!this.refreshed.compareAndSet(false, true)) {
-			throw new IllegalStateException(
-					"GenericApplicationContext does not support multiple refresh attempts: just call 'refresh' once");
+@Override
+	protected final void refreshBeanFactory() throws BeansException {
+		if (hasBeanFactory()) {
+			destroyBeans();
+			closeBeanFactory();
 		}
-		this.beanFactory.setSerializationId(getId());
+		try {
+			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			beanFactory.setSerializationId(getId());
+			customizeBeanFactory(beanFactory);
+            // 加载xml文件，通过jkd的dom解析，将bean的信息解析成beanDefination的ConCurrentHashMap
+			loadBeanDefinitions(beanFactory);
+			synchronized (this.beanFactoryMonitor) {
+				this.beanFactory = beanFactory;
+			}
+		}
+		catch (IOException ex) {
+			throw new ApplicationContextException("I/O error parsing bean definition source for " + getDisplayName(), ex);
+		}
 	}
 ```
 
@@ -331,4 +366,55 @@ public final ConfigurableListableBeanFactory getBeanFactory() {
 
 
 
-### 3.
+### 3.prepareBeanFactory(beanFactory)
+
+```java
+/************************/
+protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+		beanFactory.setBeanClassLoader(getClassLoader());
+		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
+
+		// 注册***Aware的BeanPostProcessor，这个后置处理器用来处理****Aware，如果实现了这个借口，直接调用对应的实现类的set方法
+		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+    
+    	//下面几行的意思就是，如果某个 bean 依赖于以下几个接口的实现类，在自动装配的时候忽略它们, 其实就是将这个借口放到一个set里，
+		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
+		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
+		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
+		beanFactory.ignoreDependencyInterface(ApplicationEventPublisherAware.class);
+		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
+		beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
+
+		// 下面几行就是为特殊的几个 bean 赋值，如果有 bean 依赖了以下几个，会注入这边相应的值，
+		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
+		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
+		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
+		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
+
+		// 注册时间监听器的BeanPostProcessor，后面如果一个bean实现了监听器的话直接将监听器注册到容器中。
+		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
+
+		// 这里涉及到特殊的 bean，名为：loadTimeWeaver ,如果发现这个bean就将次bean加入到后置处理器中
+		if (beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
+			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
+			// Set a temporary ClassLoader for type matching.
+			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
+		}
+
+		// 注册几个系统默认的bean ENVIRONMENT_BEAN_NAME、SYSTEM_PROPERTIES_BEAN_NAME、SYSTEM_ENVIRONMENT_BEAN_NAME
+		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
+			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
+		}
+		if (!beanFactory.containsLocalBean(SYSTEM_PROPERTIES_BEAN_NAME)) {
+			beanFactory.registerSingleton(SYSTEM_PROPERTIES_BEAN_NAME, getEnvironment().getSystemProperties());
+		}
+		if (!beanFactory.containsLocalBean(SYSTEM_ENVIRONMENT_BEAN_NAME)) {
+			beanFactory.registerSingleton(SYSTEM_ENVIRONMENT_BEAN_NAME, getEnvironment().getSystemEnvironment());
+		}
+	}
+```
+
+
+
+### 4.
