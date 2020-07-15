@@ -234,7 +234,7 @@ public class LogAspects {
 
 + AnnotationAwareAspectJAutoProxyCreator的作用
 
-  ​	![](./img/AspectJAwareAdvisorAutoProxyCreator.png)
+  ​	![](../img/AspectJAwareAdvisorAutoProxyCreator.png)
 
   + 他的父类AbstractAutoProxyCreator实现了SmartInstantiationAwareBeanPostProcessor后置处理器和BeanFactoryAware
 
