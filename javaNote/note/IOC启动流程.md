@@ -1,3 +1,5 @@
+## IOC启动流程
+
 ### 0.创建AnnotationConfigApplicationContext对象
 
 ```java
@@ -694,7 +696,7 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
    try {
       // 为bean附初值
       populateBean(beanName, mbd, instanceWrapper);
-      // 贷
+      // 调用init方法
       exposedObject = initializeBean(beanName, exposedObject, mbd);
    }
    catch (Throwable ex) {
@@ -746,3 +748,50 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
    return exposedObject;
 }
 ```
+
+## 事务的实现方式
+
+### 实现事务的基本操作
+
+```java
+// 1 开启事务
+@EnableTransactionManagement
+@ComponentScan("com.lee.tx")
+@Configuration
+public class TxConfig {
+
+    @Bean
+    public DataSource dataSource(){
+        final ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setUser("root");
+        dataSource.setPassword("123456");
+        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+        return dataSource;
+    }
+
+    @Bean
+    JdbcTemplate jdbcTemplate(@Autowired DataSource dataSource){
+        return new JdbcTemplate(dataSource);
+    }
+
+	// 2 注册一个事务管理器
+    @Bean
+    PlatformTransactionManager transactionManager(@Autowired DataSource dataSource){
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+
+	// 3 使用注解事务
+	@Transactional
+    public void insert(String id,String name){
+        userDao.insert(id, name);
+        int a = 1 / 0;
+    }
+
+```
+
+
+
+### 实现事务的原理
+
+#### 1.
