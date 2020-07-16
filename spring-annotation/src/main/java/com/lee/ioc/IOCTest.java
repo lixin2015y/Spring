@@ -10,4 +10,5 @@ public class IOCTest {
         final ApplicationContext context
                 = new AnnotationConfigApplicationContext(IOCConfig.class);
     }
+
 }

@@ -996,7 +996,7 @@ protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable O
 }
 ```
 
-#### 2.MergedBeanDefinitionPostProcessor
+### 2.MergedBeanDefinitionPostProcessor
 
 > 在bean实例化后，在bean赋值之前，可以再次修改bean的定义信息
 
@@ -1049,6 +1049,165 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 	}
 ```
 
+### 3.BeanPostPorcessor
+
+> 调用初始化方法的前后
+
+```java
+if (mbd == null || !mbd.isSynthetic()) {
+			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+		}
+
+		try {
+			invokeInitMethods(beanName, wrappedBean, mbd);
+		}
+		catch (Throwable ex) {
+			throw new BeanCreationException(
+					(mbd != null ? mbd.getResourceDescription() : null),
+					beanName, "Invocation of init method failed", ex);
+		}
+		if (mbd == null || !mbd.isSynthetic()) {
+			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+		}
+```
+
+### 4.ApplicationContextAwareProcessor用于试下aware接口的自动装配
+
+```java
+@Override
+	@Nullable
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		if (!(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
+				bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
+				bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware)){
+			return bean;
+		}
+
+		AccessControlContext acc = null;
+
+		if (System.getSecurityManager() != null) {
+			acc = this.applicationContext.getBeanFactory().getAccessControlContext();
+		}
+
+		if (acc != null) {
+			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+				invokeAwareInterfaces(bean);
+				return null;
+			}, acc);
+		}
+		else {
+			invokeAwareInterfaces(bean);
+		}
+
+		return bean;
+	}
+
+	private void invokeAwareInterfaces(Object bean) {
+		if (bean instanceof EnvironmentAware) {
+			((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
+		}
+		if (bean instanceof EmbeddedValueResolverAware) {
+			((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
+		}
+		if (bean instanceof ResourceLoaderAware) {
+			((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
+		}
+		if (bean instanceof ApplicationEventPublisherAware) {
+			((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
+		}
+		if (bean instanceof MessageSourceAware) {
+			((MessageSourceAware) bean).setMessageSource(this.applicationContext);
+		}
+		if (bean instanceof ApplicationContextAware) {
+			((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
+		}
+	}
+```
+
+
+
+##  事件驱动模型的实现原理
+
+### 1.初始化事件多播器（事件派发器）
+
+```java
+protected void initApplicationEventMulticaster() {
+		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
+			this.applicationEventMulticaster =
+					beanFactory.getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster.class);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Using ApplicationEventMulticaster [" + this.applicationEventMulticaster + "]");
+			}
+		}
+		else {
+			this.applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
+			beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, this.applicationEventMulticaster);
+			if (logger.isTraceEnabled()) {
+				logger.trace("No '" + APPLICATION_EVENT_MULTICASTER_BEAN_NAME + "' bean, using " +
+						"[" + this.applicationEventMulticaster.getClass().getSimpleName() + "]");
+			}
+		}
+	}
+```
+
+### 2.注册监听器，将监听器加入到事件派发器中（这一步只能添加实现接口的）
+
+```java
+protected void registerListeners() {
+		// Register statically specified listeners first.
+		for (ApplicationListener<?> listener : getApplicationListeners()) {
+			getApplicationEventMulticaster().addApplicationListener(listener);
+		}
+
+		// Do not initialize FactoryBeans here: We need to leave all regular beans
+		// uninitialized to let post-processors apply to them!
+		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
+		for (String listenerBeanName : listenerBeanNames) {
+			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
+		}
+
+		// Publish early application events now that we finally have a multicaster...
+		Set<ApplicationEvent> earlyEventsToProcess = this.earlyApplicationEvents;
+		this.earlyApplicationEvents = null;
+		if (earlyEventsToProcess != null) {
+			for (ApplicationEvent earlyEvent : earlyEventsToProcess) {
+				getApplicationEventMulticaster().multicastEvent(earlyEvent);
+			}
+		}
+	}
+
+```
+
+### 3.利用后置后置处理器EventListenerMethodProcessor添加@EventListener标注的事件监听器
+
+![](../img/EventListenerMethodProcessor.png)
+
+> 这个后置处理器实现了SmartInitializingSingleton 在bean初始化结束后会回调
+
+```java
+/******在preInstantiateSingletons方法中，上面是循环初始化bean*********/
+
+// Trigger post-initialization callback for all applicable beans...
+		for (String beanName : beanNames) {
+			Object singletonInstance = getSingleton(beanName);
+			if (singletonInstance instanceof SmartInitializingSingleton) {
+				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
+				if (System.getSecurityManager() != null) {
+					AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+						smartSingleton.afterSingletonsInstantiated();
+						return null;
+					}, getAccessControlContext());
+				}
+				else {
+					smartSingleton.afterSingletonsInstantiated();
+				}
+			}
+		}
+```
+
+### 4.发布事件
+
 
 
 ## 事务的实现方式
@@ -1094,7 +1253,29 @@ public class TxConfig {
 
 
 
-#### 
+
+
+
+
+
+
+## AOP实现原理
+
+### 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 实现事务的原理
 
