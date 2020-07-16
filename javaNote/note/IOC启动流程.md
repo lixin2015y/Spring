@@ -10,10 +10,6 @@ public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 }
 ```
 
-
-
-
-
 ### 1.prepareRefresh();
 
 > ```java
@@ -474,7 +470,7 @@ protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory b
 				markBeanAsCreated(beanName);
 			}
 
-            // 上面已经检查了，是不是档期那容器已经创建，或者在父容器已经创建，
+            // 上面已经检查了，是不是当前那容器已经创建，或者在父容器已经创建，
             // 到这就是单实例没创建国过，或者多实例需要创建
 			try {
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
@@ -628,6 +624,7 @@ protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable O
    }
 
    try {
+      // 如果不是代理对象现在在这创建对象
       Object beanInstance = doCreateBean(beanName, mbdToUse, args);
       if (logger.isTraceEnabled()) {
          logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -749,6 +746,311 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 }
 ```
 
+##### a) 实例化对象利用反射
+
+```java
+	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
+		// 确保已经加载了此class
+		Class<?> beanClass = resolveBeanClass(mbd, beanName);
+
+        // 检验该类的访问权限
+		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
+			throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
+		}
+
+		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
+		if (instanceSupplier != null) {
+			return obtainFromSupplier(instanceSupplier, beanName);
+		}
+
+        // 采用工厂方法实例化，不熟悉这个概念的读者请看附录，注意，不是 FactoryBean
+		if (mbd.getFactoryMethodName() != null) {
+			return instantiateUsingFactoryMethod(beanName, mbd, args);
+		}
+
+		// Shortcut when re-creating the same bean...
+		boolean resolved = false;
+		boolean autowireNecessary = false;
+		if (args == null) {
+			synchronized (mbd.constructorArgumentLock) {
+				if (mbd.resolvedConstructorOrFactoryMethod != null) {
+					resolved = true;
+					autowireNecessary = mbd.constructorArgumentsResolved;
+				}
+			}
+		}
+		if (resolved) {
+            // 构造函数注入
+			if (autowireNecessary) {
+				return autowireConstructor(beanName, mbd, null, null);
+			}
+			else {
+                // 无参构造函数
+				return instantiateBean(beanName, mbd);
+			}
+		}
+
+		// // 判断是否采用有参构造函数
+		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
+				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+			return autowireConstructor(beanName, mbd, ctors, args);
+		}
+
+		// 构造函数依赖注入
+		ctors = mbd.getPreferredConstructors();
+		if (ctors != null) {
+			return autowireConstructor(beanName, mbd, ctors, null);
+		}
+
+		// 调用无参构造函数
+		return instantiateBean(beanName, mbd);
+	}
+
+```
+
+
+
+##### b）给bean附初始值populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw)
+
+```java
+@SuppressWarnings("deprecation")  // for postProcessPropertyValues
+protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) {
+   if (bw == null) {
+      if (mbd.hasPropertyValues()) {
+         throw new BeanCreationException(
+               mbd.getResourceDescription(), beanName, "Cannot apply property values to null instance");
+      }
+      else {
+         // Skip property population phase for null instance.
+         return;
+      }
+   }
+
+   // InstantiationAwareBeanPostProcessor 的实现类可以在这里对 bean 进行状态修改
+   if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+      for (BeanPostProcessor bp : getBeanPostProcessors()) {
+         if (bp instanceof InstantiationAwareBeanPostProcessor) {
+            InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+            if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
+               return;
+            }
+         }
+      }
+   }
+
+   PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
+
+   // 自动装配
+   int resolvedAutowireMode = mbd.getResolvedAutowireMode();
+   if (resolvedAutowireMode == AUTOWIRE_BY_NAME || resolvedAutowireMode == AUTOWIRE_BY_TYPE) {
+      MutablePropertyValues newPvs = new MutablePropertyValues(pvs);
+      // Add property values based on autowire by name if applicable.
+      if (resolvedAutowireMode == AUTOWIRE_BY_NAME) {
+         autowireByName(beanName, mbd, bw, newPvs);
+      }
+      // Add property values based on autowire by type if applicable.
+      if (resolvedAutowireMode == AUTOWIRE_BY_TYPE) {
+         autowireByType(beanName, mbd, bw, newPvs);
+      }
+      pvs = newPvs;
+   }
+
+   boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
+   boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
+
+   PropertyDescriptor[] filteredPds = null;
+   if (hasInstAwareBpps) {
+      if (pvs == null) {
+         pvs = mbd.getPropertyValues();
+      }
+      for (BeanPostProcessor bp : getBeanPostProcessors()) {
+         if (bp instanceof InstantiationAwareBeanPostProcessor) {
+            InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+            PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
+            if (pvsToUse == null) {
+               if (filteredPds == null) {
+                  filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
+               }
+               pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
+               if (pvsToUse == null) {
+                  return;
+               }
+            }
+            pvs = pvsToUse;
+         }
+      }
+   }
+   if (needsDepCheck) {
+      if (filteredPds == null) {
+         filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
+      }
+      checkDependencies(beanName, mbd, filteredPds, pvs);
+   }
+
+   if (pvs != null) {
+      applyPropertyValues(beanName, mbd, bw, pvs);
+   }
+}
+```
+
+##### c)初始化方法的调用
+
+```java
+protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+		
+       // 对实现了aware接口的方法进行配置信息得设置
+       if (System.getSecurityManager() != null) {
+			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+				invokeAwareMethods(beanName, bean);
+				return null;
+			}, getAccessControlContext());
+		}
+		else {
+			invokeAwareMethods(beanName, bean);
+		}
+
+        
+		Object wrappedBean = bean;
+		if (mbd == null || !mbd.isSynthetic()) {
+            // BeanPostProcessor 的 postProcessBeforeInitialization 回调
+			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+		}
+
+    	// 调用初始化方法
+    	// 处理 bean 中定义的 init-method，
+      	// 或者如果 bean 实现了 InitializingBean 接口，调用 afterPropertiesSet() 方法
+		try {
+			invokeInitMethods(beanName, wrappedBean, mbd);
+		}
+		catch (Throwable ex) {
+			throw new BeanCreationException(
+					(mbd != null ? mbd.getResourceDescription() : null),
+					beanName, "Invocation of init method failed", ex);
+		}
+		if (mbd == null || !mbd.isSynthetic()) {
+            // BeanPostProcessor 的 postProcessAfterInitialization 回调
+			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+		}
+
+		return wrappedBean;
+	}
+```
+
+
+
+### 11.finishRefresh()
+
+```
+protected void finishRefresh() {
+   // Clear context-level resource caches (such as ASM metadata from scanning).
+   clearResourceCaches();
+
+   // Initialize lifecycle processor for this context.
+   initLifecycleProcessor();
+
+   // Propagate refresh to lifecycle processor first.
+   getLifecycleProcessor().onRefresh();
+
+   // Publish the final event.
+   publishEvent(new ContextRefreshedEvent(this));
+
+   // Participate in LiveBeansView MBean, if active.
+   LiveBeansView.registerApplicationContext(this);
+}
+```
+
+
+
+
+
+## 我认为几个重要的BeanPostProcessor
+
+### 1.InstantiationAwareBeanPostProcessor
+
+> 在createBean内部，真正创建bean之前调用
+
+```java
+protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+
+	try {
+			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+			if (bean != null) {
+				return bean;
+			}
+		}
+		catch (Throwable ex) {
+			throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,
+					"BeanPostProcessor before instantiation of bean failed", ex);
+		}
+
+		try {
+			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Finished creating instance of bean '" + beanName + "'");
+			}
+			return beanInstance;
+		}
+}
+```
+
+#### 2.MergedBeanDefinitionPostProcessor
+
+> 在bean实例化后，在bean赋值之前，可以再次修改bean的定义信息
+
+```java
+protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
+			throws BeanCreationException {
+
+		// Instantiate the bean.
+		BeanWrapper instanceWrapper = null;
+		if (mbd.isSingleton()) {
+			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
+		}
+		if (instanceWrapper == null) {
+			instanceWrapper = createBeanInstance(beanName, mbd, args);
+		}
+		final Object bean = instanceWrapper.getWrappedInstance();
+		Class<?> beanType = instanceWrapper.getWrappedClass();
+		if (beanType != NullBean.class) {
+			mbd.resolvedTargetType = beanType;
+		}
+
+		// Allow post-processors to modify the merged bean definition.
+		synchronized (mbd.postProcessingLock) {
+			if (!mbd.postProcessed) {
+				try {
+					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+				}
+				catch (Throwable ex) {
+					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+							"Post-processing of merged bean definition failed", ex);
+				}
+				mbd.postProcessed = true;
+			}
+		}
+
+		// Eagerly cache singletons to be able to resolve circular references
+		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
+				isSingletonCurrentlyInCreation(beanName));
+		if (earlySingletonExposure) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Eagerly caching bean '" + beanName +
+						"' to allow for resolving potential circular references");
+			}
+			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+		}
+
+		。。。。。。。。。。
+		return exposedObject;
+	}
+```
+
+
+
 ## 事务的实现方式
 
 ### 实现事务的基本操作
@@ -792,6 +1094,29 @@ public class TxConfig {
 
 
 
+#### 
+
 ### 实现事务的原理
 
-#### 1.
+#### 1. 在createBean方法中
+
+```java
+protected Object resolveBeforeInstantiation(String beanName, RootBeanDefinition mbd) {
+		Object bean = null;
+		if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
+			// Make sure bean class is actually resolved at this point.
+			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+				Class<?> targetType = determineTargetType(beanName, mbd);
+				if (targetType != null) {
+					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
+					if (bean != null) {
+						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+					}
+				}
+			}
+			mbd.beforeInstantiationResolved = (bean != null);
+		}
+		return bean;
+	}
+```
+

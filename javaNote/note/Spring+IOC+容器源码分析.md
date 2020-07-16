@@ -1417,7 +1417,6 @@ public void preInstantiateSingletons() throws BeansException {
                      ((SmartFactoryBean<?>) factory).isEagerInit());
             }
             if (isEagerInit) {
-               
                getBean(beanName);
             }
          }
