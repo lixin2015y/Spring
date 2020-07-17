@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 ## IOC启动流程
 
 ### 0.创建AnnotationConfigApplicationContext对象
@@ -92,7 +96,7 @@ protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
-		// 注册时间监听器的BeanPostProcessor，后面如果一个bean实现了监听器的话直接将监听器注册到容器中。
+		// 注册事件监听器的BeanPostProcessor，后面如果一个bean实现了监听器的话直接将监听器注册到容器中。
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
 
 		// 这里涉及到特殊的 bean，名为：loadTimeWeaver ,如果发现这个bean就将次bean加入到后置处理器中
@@ -202,7 +206,7 @@ public static void invokeBeanFactoryPostProcessors(
 		sortPostProcessors(internalPostProcessors, beanFactory);
 		registerBeanPostProcessors(beanFactory, internalPostProcessors);
 
-		// 额外的注册了一个后置处理器？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？
+		// 在这里从新注册bean事件监听器，将其放到后置处理器执行链的尾部
 		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(applicationContext));
 	}
 
@@ -248,6 +252,7 @@ protected void initMessageSource() {
 
 ```java
 /****************初始化一个事件多播器*****注册一个applicationEventMulticaster的bean，如果没有配置则会创建一个简单默认的**************/
+/**初始化一个AbstractApplicationEventMulticaster，这个类里有个内部类ListenerRetriever可以保存封装事件监听器的数据***/
 protected void initApplicationEventMulticaster() {
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		if (beanFactory.containsLocalBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
@@ -612,7 +617,7 @@ protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable O
    }
 
    try {
-      // 给BeanPostProcessors一个返回代理而不是目标bean实例的机会。***********************************
+      // 给BeanPostProcessors一个返回代理而不是目标bean实例的机会。AOP实现原理。。。
       Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
       if (bean != null) {
          return bean;
@@ -900,7 +905,7 @@ protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable B
 ```java
 protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
 		
-       // 对实现了aware接口的方法进行配置信息得设置
+       // 对实现了aware接口的实现方法进行回调
        if (System.getSecurityManager() != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 				invokeAwareMethods(beanName, bean);
@@ -969,7 +974,7 @@ protected void finishRefresh() {
 
 ### 1.InstantiationAwareBeanPostProcessor
 
-> 在createBean内部，真正创建bean之前调用
+> 在createBean内部，真正创建bean之前调用，创建
 
 ```java
 protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
@@ -1071,10 +1076,11 @@ if (mbd == null || !mbd.isSynthetic()) {
 		}
 ```
 
-### 4.ApplicationContextAwareProcessor用于试下aware接口的自动装配
+### 4.ApplicationContextAwareProcessor用于实现了aware接口的自动装配
 
 ```java
-@Override
+class ApplicationContextAwareProcessor implements BeanPostProcessor{
+	@Override
 	@Nullable
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (!(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
@@ -1122,6 +1128,217 @@ if (mbd == null || !mbd.isSynthetic()) {
 			((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
 		}
 	}
+}
+```
+
+### 5.EventListenerMethodProcessor事件监听后置处理器
+
+> 他实现了SmartInitializingSingleton接口，执行时机在所有bean创建完后，再次循环判断是不是有@EvenListener标注的方法将该方法解析成时间监听器并加入到多播器中
+
+```java
+public void preInstantiateSingletons() throws BeansException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("Pre-instantiating singletons in " + this);
+		}
+
+		// Iterate over a copy to allow for init methods which in turn register new bean definitions.
+		// While this may not be part of the regular factory bootstrap, it does otherwise work fine.
+		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
+
+		// Trigger initialization of all non-lazy singleton beans...
+
+		// Trigger post-initialization callback for all applicable beans...
+		for (String beanName : beanNames) {
+			Object singletonInstance = getSingleton(beanName);
+			if (singletonInstance instanceof SmartInitializingSingleton) {
+				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;
+				if (System.getSecurityManager() != null) {
+					AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+						smartSingleton.afterSingletonsInstantiated();
+						return null;
+					}, getAccessControlContext());
+				}
+				else {
+					smartSingleton.afterSingletonsInstantiated();
+				}
+			}
+		}
+	}
+```
+
+### 6.ApplicationListenerDetector为了后加入的时间监听器的注册
+
+```java
+// 实现了DestructionAwareBeanPostProcessor和MergedBeanDefinitionPostProcessor接口
+class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
+	@Override
+	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		if (ApplicationListener.class.isAssignableFrom(beanType)) {
+			this.singletonNames.put(beanName, beanDefinition.isSingleton());
+		}
+	}
+
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) {
+		return bean;
+	}
+
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) {
+		if (bean instanceof ApplicationListener) {
+			// potentially not detected as a listener by getBeanNamesForType retrieval
+			Boolean flag = this.singletonNames.get(beanName);
+			if (Boolean.TRUE.equals(flag)) {
+				// singleton bean (top-level or inner): register on the fly
+				this.applicationContext.addApplicationListener((ApplicationListener<?>) bean);
+			}
+			else if (Boolean.FALSE.equals(flag)) {
+				if (logger.isWarnEnabled() && !this.applicationContext.containsBean(beanName)) {
+					// inner bean with other scope - can't reliably process events
+					logger.warn("Inner bean '" + beanName + "' implements ApplicationListener interface " +
+							"but is not reachable for event multicasting by its containing ApplicationContext " +
+							"because it does not have singleton scope. Only top-level listener beans are allowed " +
+							"to be of non-singleton scope.");
+				}
+				this.singletonNames.remove(beanName);
+			}
+		}
+		return bean;
+	}
+
+	@Override
+	public void postProcessBeforeDestruction(Object bean, String beanName) {
+		if (bean instanceof ApplicationListener) {
+			try {
+				ApplicationEventMulticaster multicaster = this.applicationContext.getApplicationEventMulticaster();
+				multicaster.removeApplicationListener((ApplicationListener<?>) bean);
+				multicaster.removeApplicationListenerBean(beanName);
+			}
+			catch (IllegalStateException ex) {
+				// ApplicationEventMulticaster not initialized yet - no need to remove a listener
+			}
+		}
+	}
+
+}
+```
+
+### 7.ImportAwareBeanPostProcessor
+
+> 在执行ConfigurationClassPostProcessor的回调方法的时候加入
+
+## 我认为重要的BeanFactoryPostProcessor
+
+### 1.ConfigurationClassPostProcessor,拥有注解方式的ioc启动加载bean的配置信息
+
+```java
+public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
+		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
+         
+public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+		String[] candidateNames = registry.getBeanDefinitionNames();
+
+		for (String beanName : candidateNames) {
+			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
+				}
+			}
+			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
+			}
+		}
+
+		// Return immediately if no @Configuration classes were found
+		if (configCandidates.isEmpty()) {
+			return;
+		}
+
+		// Sort by previously determined @Order value, if applicable
+		configCandidates.sort((bd1, bd2) -> {
+			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
+			int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());
+			return Integer.compare(i1, i2);
+		});
+
+		// Detect any custom bean name generation strategy supplied through the enclosing application context
+		SingletonBeanRegistry sbr = null;
+		if (registry instanceof SingletonBeanRegistry) {
+			sbr = (SingletonBeanRegistry) registry;
+			if (!this.localBeanNameGeneratorSet) {
+				BeanNameGenerator generator = (BeanNameGenerator) sbr.getSingleton(
+						AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR);
+				if (generator != null) {
+					this.componentScanBeanNameGenerator = generator;
+					this.importBeanNameGenerator = generator;
+				}
+			}
+		}
+
+		if (this.environment == null) {
+			this.environment = new StandardEnvironment();
+		}
+
+		// Parse each @Configuration class
+		ConfigurationClassParser parser = new ConfigurationClassParser(
+				this.metadataReaderFactory, this.problemReporter, this.environment,
+				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
+
+		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
+		do {
+			parser.parse(candidates);
+			parser.validate();
+
+			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
+			configClasses.removeAll(alreadyParsed);
+
+			// Read the model and create bean definitions based on its content
+			if (this.reader == null) {
+				this.reader = new ConfigurationClassBeanDefinitionReader(
+						registry, this.sourceExtractor, this.resourceLoader, this.environment,
+						this.importBeanNameGenerator, parser.getImportRegistry());
+			}
+			this.reader.loadBeanDefinitions(configClasses);
+			alreadyParsed.addAll(configClasses);
+
+			candidates.clear();
+			if (registry.getBeanDefinitionCount() > candidateNames.length) {
+				String[] newCandidateNames = registry.getBeanDefinitionNames();
+				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
+				Set<String> alreadyParsedClasses = new HashSet<>();
+				for (ConfigurationClass configurationClass : alreadyParsed) {
+					alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
+				}
+				for (String candidateName : newCandidateNames) {
+					if (!oldCandidateNames.contains(candidateName)) {
+						BeanDefinition bd = registry.getBeanDefinition(candidateName);
+						if (ConfigurationClassUtils.checkConfigurationClassCandidate(bd, this.metadataReaderFactory) &&
+								!alreadyParsedClasses.contains(bd.getBeanClassName())) {
+							candidates.add(new BeanDefinitionHolder(bd, candidateName));
+						}
+					}
+				}
+				candidateNames = newCandidateNames;
+			}
+		}
+		while (!candidates.isEmpty());
+
+		// Register the ImportRegistry as a bean in order to support ImportAware @Configuration classes
+		if (sbr != null && !sbr.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
+			sbr.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry());
+		}
+
+		if (this.metadataReaderFactory instanceof CachingMetadataReaderFactory) {
+			// Clear cache in externally provided MetadataReaderFactory; this is a no-op
+			// for a shared cache since it'll be cleared by the ApplicationContext.
+			((CachingMetadataReaderFactory) this.metadataReaderFactory).clearCache();
+		}
+	}
+            
+        }
 ```
 
 
@@ -1208,6 +1425,23 @@ protected void registerListeners() {
 
 ### 4.发布事件
 
+```java
+// 通过循环多播器中所有的监听器，判断类型调用符合该事件的方法    
+@Override
+	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
+		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+		Executor executor = getTaskExecutor();
+		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
+			if (executor != null) {
+				executor.execute(() -> invokeListener(listener, event));
+			}
+			else {
+				invokeListener(listener, event);
+			}
+		}
+	}
+```
+
 
 
 ## 事务的实现方式
@@ -1253,15 +1487,25 @@ public class TxConfig {
 
 
 
-
-
-
-
-
-
 ## AOP实现原理
 
-### 
+### 1.AOP的实现
+
++ 将业务逻辑组件和切面类都加入到容器中；告诉Spring哪个是切面类（@Aspect）
++ 在切面类上的每一个通知方法上标注通知注解，告诉Spring何时何地运行（切入点表达式）
++ 开启基于注解的aop模式；@EnableAspectJAutoProxy
+
+### 2.AOP原理
+
+#### 2.1通过@EnableAspectJAutoProxy导入一个组件AnnotationAwareAspectJAutoProxyCreator.class
+
+> 这个组件实现SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware可以在bean初始化完成后、bean赋值之前回调
+
+![](../img/AnnotationAwareAspectJAutoProxyCreator.png)
+
+```java
+
+```
 
 
 
