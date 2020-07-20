@@ -1166,7 +1166,7 @@ public void preInstantiateSingletons() throws BeansException {
 	}
 ```
 
-### 6.ApplicationListenerDetector为了后加入的时间监听器的注册
+### 6.ApplicationListenerDetector为了后加入的事件监听器的注册
 
 ```java
 // 实现了DestructionAwareBeanPostProcessor和MergedBeanDefinitionPostProcessor接口
