@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lee.dao.TeacherDao">
+
+    <resultMap type="com.lee.entity.Teacher" id="TeacherMap">
+        <result property="tid" column="tid" jdbcType="INTEGER"/>
+        <result property="tname" column="tname" jdbcType="VARCHAR"/>
+        <result property="tage" column="tage" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TeacherMap">
+        select
+          tid, tname, tage
+        from test1.teacher
+        where tid = #{tid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="TeacherMap">
+        select
+          tid, tname, tage
+        from test1.teacher
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="TeacherMap">
+        select
+          tid, tname, tage
+        from test1.teacher
+        <where>
+            <if test="tid != null">
+                and tid = #{tid}
+            </if>
+            <if test="tname != null and tname != ''">
+                and tname = #{tname}
+            </if>
+            <if test="tage != null">
+                and tage = #{tage}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="tid" useGeneratedKeys="true">
+        insert into test1.teacher(tname, tage)
+        values (#{tname}, #{tage})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update test1.teacher
+        <set>
+            <if test="tname != null and tname != ''">
+                tname = #{tname},
+            </if>
+            <if test="tage != null">
+                tage = #{tage},
+            </if>
+        </set>
+        where tid = #{tid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from test1.teacher where tid = #{tid}
+    </delete>
+
+</mapper>
