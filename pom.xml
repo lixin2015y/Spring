@@ -15,6 +15,7 @@
         <module>javaNote</module>
         <module>springboot</module>
         <module>spring-annotation</module>
+        <module>spring-mybatis</module>
     </modules>
 
 
