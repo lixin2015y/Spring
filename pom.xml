@@ -16,6 +16,7 @@
         <module>springboot</module>
         <module>spring-annotation</module>
         <module>spring-mybatis</module>
+        <module>jdk1.7</module>
     </modules>
     <dependencies>
         <dependency>
