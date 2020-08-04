@@ -17,13 +17,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@Controller
+@RestController
 public class SpringMVCHandler {
 
 
     @RequestMapping("/hello")
     String hello() {
-        System.out.println("hello springMvc");
+        System.out.println("hello springMvc123");
         return "success";
     }
 
