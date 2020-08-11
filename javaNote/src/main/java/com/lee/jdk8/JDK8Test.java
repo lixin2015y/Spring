@@ -2,7 +2,6 @@ package com.lee.jdk8;
 
 import com.lee.eo.User;
 import org.junit.Test;
-import sun.nio.ch.FileKey;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -89,5 +88,19 @@ public class JDK8Test {
         }
     }
 
+    @Test
+    public void test6() {
+        System.out.println(tableSizeFor(19));
+    }
 
+
+    static final int tableSizeFor(int cap) {
+        int n = cap - 1;
+        n |= n >>> 1;
+        n |= n >>> 2;
+        n |= n >>> 4;
+        n |= n >>> 8;
+
+        return (n < 0) ? 1 : (n >= 1234657) ? 1234657 : n + 1;
+    }
 }

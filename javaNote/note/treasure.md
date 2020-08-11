@@ -134,6 +134,53 @@
 
 ### 2.2SpringMvc
 
+#### 2.2.1SpringMvc的启动
+
++ 在web.xml中定义contextConfigLocation,
+
+  ```xml
+  <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+          classpath*:conf/spring/applicationContext_core*.xml,
+          classpath*:conf/spring/applicationContext_dict*.xml,
+          classpath*:conf/spring/applicationContext_hibernate.xml,
+      </param-value>
+  </context-param>
+  ```
+
++ 使用ContextLoaderServlet，这个类实现了在servlet启动的时候自动去找WEB-INF下面的applicationContext.xml,
+
+  这个类实现
+
+  ```xml
+  <servlet>
+     　　<servlet-name>context</servlet-arne>
+  　　　　<servlet-class>org.springframework.web.context.ContextLoaderServlet</servlet-class>
+     　　<load-on-startup>l</load-on-startup>
+  </servlet>
+  ```
+
++ 关于ContextLoaderListener，它实现了ServletContextListener，重写了contextInitialized()方法，在容器的启动的时候调用，在此处启动webapplicationcontext，并且寻找，其他的容器作为自己的父容器
+
++ Web容器启动的全部过程
+
+  + 解析context-param创建一个application对象
+  + 读取listener，ContextLoaderListener会创建一个WebApplication对象，创建contextConfigation中的配置，并设置父容器
+  + litener创建完城后会创建Filter
+  + 初始化Servlet，一般使用DispatchServlet类
+
+#### 2.2.2SpringMvc的调用过程
+
++ 客户端发送请求，请求到DispathcherServlet
++ DispatcherServlet 根据URL找到对应的HandlerMapping，解析到对应的Handler
++ 交给HandlerAdapter处理，调用真正的处理逻辑，处理结果返回一个ModelAndView对象 Model封装了数据
++ ViewResolver会根据View找到实际的View
++ DispatcherServlet将Model传给View
++ 将View返回给请求者
+
+
+
 ### 2.3Springboot
 
 ### 2.4Mybatis
