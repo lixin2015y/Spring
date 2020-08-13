@@ -185,6 +185,27 @@
 
 ### 2.4Mybatis
 
+#### 2.4.1mybatis的缓存
+
++ 一级缓存:存储在SqlSession中
+  + 一级缓存失效情况：
+    + sqlsession不同
+    + 使用不同的查询条件
+    + 两次查询之间执行了增删改
+    + 手动调用了clearCache方法
+
++ 二级缓存：namespace级别的，一个namespace对应一个二级缓存
+
+  + 会话关闭，一级缓存中的数据会保存导二级缓存
+
+  + 二级缓存的配置项
+
+    + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
+    + flusInternval：缓存的刷新时间
+    + readOnly：true表示只读操作myabtis直接返回缓存的引用，速度较快；false的话表示有可能修改，mybatis会将数据进行序列化
+
+    
+
 # 3.数据库
 
 ### 3.1MySql

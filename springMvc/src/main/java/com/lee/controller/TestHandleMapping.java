@@ -1,4 +1,4 @@
-package com.lee.handle;
+package com.lee.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
