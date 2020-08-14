@@ -6,6 +6,10 @@
     <properties resource="db.properties">
         <property name="useColumnLabel" value="true"/>
     </properties>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="logImpl" value="LOG4J"/>
+    </settings>
     <typeAliases>
         <package name="com.lee.entity.*"/>
     </typeAliases>

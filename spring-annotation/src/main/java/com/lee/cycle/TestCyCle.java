@@ -7,6 +7,7 @@ public class TestCyCle {
 
     @Test
     public void test() {
-        AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext(CycleConfig.class);
+        AnnotationConfigApplicationContext annotationConfigApplicationContext =
+                new AnnotationConfigApplicationContext(CycleConfig.class);
     }
 }

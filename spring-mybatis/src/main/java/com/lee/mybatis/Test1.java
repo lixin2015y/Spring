@@ -26,15 +26,20 @@ public class Test1 {
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 
         // 得到SqlSession
-        try (SqlSession session = sqlSessionFactory.openSession()) {
+        try (SqlSession session = sqlSessionFactory.openSession();
+             SqlSession session2 = sqlSessionFactory.openSession();) {
 
-            //            User user = session.selectOne("com.lee.dao.UserDao.selectUser", 1);
+            // User user = session.selectOne("com.lee.dao.UserDao.selectUser", 1);
 
-            // 使用更简洁的方式
+            // 使用接口的方式
             UserDao userDao = session.getMapper(UserDao.class);
             User user = userDao.selectUser(1);
+            session.close();
 
-            System.out.println(user);
+            UserDao userDao2 = session2.getMapper(UserDao.class);
+            User user2 = userDao2.selectUser(1);
+
+            System.out.println(user == user2);
         }
 
 
