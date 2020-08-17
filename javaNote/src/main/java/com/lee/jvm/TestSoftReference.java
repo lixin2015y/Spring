@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
+import java.util.Arrays;
 
 public class TestSoftReference {
 
@@ -65,5 +66,12 @@ public class TestSoftReference {
 
     }
 
+
+    @Test
+    public void test5(){
+        int[] arr = {1, 4, 2};
+        Arrays.sort(arr);
+
+    }
 
 }

@@ -80,7 +80,7 @@
   ![](../img/Map.png)
    + TreeMap: 基于红黑树
    + HashMap: 基于Hash表
-   + LinkedHashMap: 基于双向量表
+   + LinkedHashMap: 基于双向链表
    + HashTable: 线程安全的HashMap
 
 #### 1.2.2ArrayList线程不安全可替代的集合
@@ -197,29 +197,69 @@
 + 二级缓存：namespace级别的，一个namespace对应一个二级缓存
 
   + 会话关闭，一级缓存中的数据会保存到二级缓存
-+ 二级缓存的配置项
-  
-  + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
+
+  + 二级缓存的配置项
+
+    + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
     + flusInternval：缓存的刷新时间
     + readOnly：true表示只读操作myabtis直接返回缓存的引用，速度较快；false的话表示有可能修改，mybatis会将数据进行序列化
   
 
 #### 2.4.2mybatis的执行流程
 
++ 二级缓存的使用
+    + 全局开启二级缓存，二级缓存默认不开（一级缓存默认开启）
+    + 在mapper.xml中配置<cache/>
+    + pojo需要支持序列化
+  
++ 缓存的设置
+
+  + 在setting中设置enableCache表示关闭二级缓存，
+
+  + 在select标签中useCache=false 也表示关闭二级缓存
+
+  + 在每个增伤改标签，中的flushCache都是默认true表示执行增删改操作之后都会清空一二级缓存，
+
+    查询标签是false，表示简单查询不清缓存
+
+  + sqlsession.clearCache()只清楚一级缓存
+
+  + localCacheScope：本地缓存作用域
+
++ 缓存的原理
+
+  + 
+
 + 首先通过全局配置文件，通过Resource.getResourceAssTream()方法构建SqlSessionFactory，通过配置文件下，创建一个Configuration的对象此对象包含了所有的配置和MapStatement
+
 + 获取SqlSession
-  + 创建Excutor对象，
+  
+  + 创建Executor对象，判断Executor类型创建对应的Executor，如果配置了二级缓存则使用CachingExecutor，调用所有拦截器的plugin方法
+  + 将executor和configuation封装成defaultSqlSession返回
+  
++ getMapper
+
+    + 通过Configuration对象中的mapperRegistry 创建一个MapperProxy代理对象，这个代理对象里包含了Executor
+
++ 执行Sql
+
+    + 判断增删改查类型创建一个Executor
+    + 创建一个StatementHandler，这个对象可以创建出一个Statement对象
+    + 通过ParmeterHandler设置参数值，通过ResultSetHandler封装结果集
+    + 通过TypeHandler解决参数的类型转换
+
+#### 2.4.3插件的运行机制
 
 
 
-#### 2.4.3mybatis的Excutor有几种类型
+#### 2.4.4mybatis的Excutor有几种类型
 
-+ SimpleExecutor：每次执行都会创建一个，用完关闭
++ SimpleExecutor**（默认)**：每次执行都会创建一个，用完关闭
 + ReuseExecutor：先以sql作为key查找statement对象，找到使用，找不到则创建，使用完不关闭，可以重复利用。
 + BatchExecutor：向数据库批量提交sql执行
 + CachingExecutor：当开启二级缓存的时候，会初始化一个CachingExecutor，这个CachingExecutor就是将上面三个包装了一下
 
-#### 2.4.4和spring整合是如何保证线程安全的
+#### 2.4.5和spring整合是如何保证线程安全的
 
 + SqlSession的实现图
 
