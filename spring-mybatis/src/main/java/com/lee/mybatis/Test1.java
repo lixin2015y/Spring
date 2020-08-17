@@ -27,7 +27,7 @@ public class Test1 {
 
         // 得到SqlSession
         try (SqlSession session = sqlSessionFactory.openSession();
-             SqlSession session2 = sqlSessionFactory.openSession();) {
+             SqlSession session2 = sqlSessionFactory.openSession()) {
 
             // User user = session.selectOne("com.lee.dao.UserDao.selectUser", 1);
 
@@ -40,7 +40,7 @@ public class Test1 {
             User user2 = userDao2.selectUser(1);
 
             System.out.println(user == user2);
-        }
+         }
 
 
     }

@@ -197,14 +197,102 @@
 + 二级缓存：namespace级别的，一个namespace对应一个二级缓存
 
   + 会话关闭，一级缓存中的数据会保存到二级缓存
-
-  + 二级缓存的配置项
-
-    + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
++ 二级缓存的配置项
+  
+  + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
     + flusInternval：缓存的刷新时间
     + readOnly：true表示只读操作myabtis直接返回缓存的引用，速度较快；false的话表示有可能修改，mybatis会将数据进行序列化
+  
 
-    
+#### 2.4.2mybatis的执行流程
+
++ 首先通过全局配置文件，通过Resource.getResourceAssTream()方法构建SqlSessionFactory，通过配置文件下，创建一个Configuration的对象此对象包含了所有的配置和MapStatement
++ 获取SqlSession
+  + 创建Excutor对象，
+
+
+
+#### 2.4.3mybatis的Excutor有几种类型
+
++ SimpleExecutor：每次执行都会创建一个，用完关闭
++ ReuseExecutor：先以sql作为key查找statement对象，找到使用，找不到则创建，使用完不关闭，可以重复利用。
++ BatchExecutor：向数据库批量提交sql执行
++ CachingExecutor：当开启二级缓存的时候，会初始化一个CachingExecutor，这个CachingExecutor就是将上面三个包装了一下
+
+#### 2.4.4和spring整合是如何保证线程安全的
+
++ SqlSession的实现图
+
+  ![](../img/sqlsession.png)
+
+
+
++ defaultSqlsession是线程不安全的，SqlSessionTemplate解决了线程安全的问题，
+
+  ```java
+  // 在SqlSessionTemplate的构造方法中创建了sqlSession的代理对象，代理对象的执行就是在SqlSessionInterceptor中的invoke方法中实现的（因为SqlSessionInterceptor实现了InvocationHandler类，使用JDK的动态代理）
+  public SqlSessionTemplate(SqlSessionFactory sqlSessionFactory, ExecutorType executorType,
+        PersistenceExceptionTranslator exceptionTranslator) {
+  
+      notNull(sqlSessionFactory, "Property 'sqlSessionFactory' is required");
+      notNull(executorType, "Property 'executorType' is required");
+  
+      this.sqlSessionFactory = sqlSessionFactory;
+      this.executorType = executorType;
+      this.exceptionTranslator = exceptionTranslator;
+      this.sqlSessionProxy = (SqlSession) newProxyInstance(SqlSessionFactory.class.getClassLoader(),
+          new Class[] { SqlSession.class }, new SqlSessionInterceptor());
+    }
+  ```
+
+  ```java
+  // 在创建SqlSessionProxy的代理对象的时候会从TransactionSynchronizationManager(事务管理器)获取一个ThreadLocal的对象，
+  // 如果获取不到则会创建一个新的并注册到事务管理器
+  SqlSessionHolder holder = (SqlSessionHolder) TransactionSynchronizationManager.getResource(sessionFactory);
+  
+  
+  // resources对象的 通过resource可以拿到当前线程中的
+  public abstract class TransactionSynchronizationManager {
+  
+  	private static final Log logger = LogFactory.getLog(TransactionSynchronizationManager.class);
+  
+  	private static final ThreadLocal<Map<Object, Object>> resources =
+  			new NamedThreadLocal<>("Transactional resources");
+  ```
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 3.数据库
 
