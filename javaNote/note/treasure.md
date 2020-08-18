@@ -80,7 +80,7 @@
   ![](../img/Map.png)
    + TreeMap: 基于红黑树
    + HashMap: 基于Hash表
-   + LinkedHashMap: 基于双向链表
+   + LinkedHashMap: 基于HashMap，将所有的元素通过一个链表链接起来，插入的有序性
    + HashTable: 线程安全的HashMap
 
 #### 1.2.2ArrayList线程不安全可替代的集合
@@ -226,16 +226,12 @@
 
   + localCacheScope：本地缓存作用域
 
-+ 缓存的原理
-
-  + 
-
 + 首先通过全局配置文件，通过Resource.getResourceAssTream()方法构建SqlSessionFactory，通过配置文件下，创建一个Configuration的对象此对象包含了所有的配置和MapStatement
 
 + 获取SqlSession
   
   + 创建Executor对象，判断Executor类型创建对应的Executor，如果配置了二级缓存则使用CachingExecutor，调用所有拦截器的plugin方法
-  + 将executor和configuation封装成defaultSqlSession返回
+  + 将executor和configuation封装成defaultSqlSession返回，这个sqlsession不是线程安全的
   
 + getMapper
 
