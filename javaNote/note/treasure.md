@@ -242,9 +242,7 @@
     + 判断增删改查类型创建一个Executor
     + 创建一个StatementHandler，这个对象可以创建出一个Statement对象
     + 通过ParmeterHandler设置参数值，通过ResultSetHandler封装结果集
-    + 通过TypeHandler解决参数的类型转换
-
-#### 2.4.3插件的运行机制
+    +  2.4.3插件的运行机制
 
 
 
