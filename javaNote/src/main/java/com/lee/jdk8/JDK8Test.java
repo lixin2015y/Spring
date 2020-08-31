@@ -103,4 +103,15 @@ public class JDK8Test {
 
         return (n < 0) ? 1 : (n >= 1234657) ? 1234657 : n + 1;
     }
+
+
+    @Test
+    public void test7() {
+        Collections.synchronizedMap(new HashMap<>());
+    }
+
+    @Test
+    public void test8() {
+        new ArrayList<>().iterator();
+    }
 }

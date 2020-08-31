@@ -192,9 +192,10 @@
 
 #### 2.2.2SpringMvc的调用过程
 
-+ 客户端发送请求，请求到DispathcherServlet
-+ DispatcherServlet 根据URL找到对应的HandlerMapping，解析到对应的Handler
-+ 交给HandlerAdapter处理，调用真正的处理逻辑，处理结果返回一个ModelAndView对象 Model封装了数据
++ 客户端发送请求，请求到DispathcherServlet（DispathcherServlet是一个Servlet被注册在web.xml中）
++ DispathcherServlet将请求交给HandlerMapping，HandlerMapping找到对应的处理器，生成处理器执行链（包含处理器对象和处理器拦截器）
++ DispathcherServlet根据返回的处理器，获取处理器适配器并执行一系列操作，参数疯转，数据转换等
++ 执行处理器，返回一个modelandview对象。
 + ViewResolver会根据View找到实际的View
 + DispatcherServlet将Model传给View
 + 将View返回给请求者
@@ -299,7 +300,7 @@
     }
   ```
 
-  ```java
+```java
   // 在创建SqlSessionProxy的代理对象的时候会从TransactionSynchronizationManager(事务管理器)获取一个ThreadLocal的对象，
   // 如果获取不到则会创建一个新的并注册到事务管理器
   SqlSessionHolder holder = (SqlSessionHolder) TransactionSynchronizationManager.getResource(sessionFactory);
@@ -312,7 +313,7 @@
   
   	private static final ThreadLocal<Map<Object, Object>> resources =
   			new NamedThreadLocal<>("Transactional resources");
-  ```
+```
 
   
 
@@ -351,6 +352,11 @@
 # 3.数据库
 
 ### 3.1MySql
+
+### 3.2Redis
+#### 为什么redis这么快
++ 
+#####
 
 # 4.大数据篇
 
