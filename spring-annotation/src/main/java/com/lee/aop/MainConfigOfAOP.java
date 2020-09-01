@@ -3,12 +3,14 @@ package com.lee.aop;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 程序运行期间动态的将某段代码切入到某些方法的指定位置进行执行的编程方式
  */
 @EnableAspectJAutoProxy
 @Configuration
+@Transactional
 public class MainConfigOfAOP {
 
     @Bean
