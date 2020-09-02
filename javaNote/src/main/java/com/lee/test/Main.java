@@ -110,7 +110,7 @@ class MetaJavaQuestionSheet {
       C. 10000
       D. 10001
     */
-    public static String qn5 = "不一定";
+    public static String qn5 = "D";
     /**
      * 一棵二叉树后序遍历的节点顺序是: 6 4 5 2 7 3 1 ，中序遍历是: 6 4 2 5 1 3 7 ，则前序遍历结果为:
      * A. 1 2 4 6 5 3 7
