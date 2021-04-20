@@ -58,3 +58,21 @@
 
 
 
+### 1.1.3 dubbo原理
+
+框架设计
+
+![/dev-guide/images/dubbo-framework.jpg](https://dubbo.apache.org/imgs/dev/dubbo-framework.jpg)
+
++ config配置层：对外配置接口，以ServiceConfig，ReferenceConfig 为中心，可以直接初始化配置类，也可以通过spring解析为配置类
++ proxy 服务代理层：服务接口透明代理，生成服务的客户端Stub和服务端Skeleton，以ServiceProxy为中心，扩展接口为ProxyFactory。
++ registry 注册中心层，封装服务地址的注册与发现，以服务URL为中心，扩展接口为RegisterFactory，Registry，RegistryService。
++ cluster路由层：封装多个提供者的路由及负载均衡，并桥接注册中心，以invoker为中心，扩展接口为Cluster、Directory、Router，LoadBalance。
++ monitor 监控层：RPC调用次数和调用时间监控，以Statistics为中心，扩展接口为，MonitorFactory、Monitor、MonitorService
++ protocol 远程调用层：封装RPC调用，以invocation、Result为中心，扩展接口为Protocol、Invoker、Exporter
++ exchange层：信息交换，封装请求相应模式，同步转异步，以Request，Response为中心，扩展接口为，Exchanger、ExchangeChannel、ExchangeClient、ExchangeServer
++ transport网络传输层：抽象mina和netty为为统一接口，以message为中心，扩展接口为，Channel、Transporter、Client、Server、Codec
++ serialize序列化层：可复用的一些工具、扩展接口为Serialzation，ObjectInput、ObjectOutput、ThreadPool
+
+#### 1.1.3.1 解析配置文件
+

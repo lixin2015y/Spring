@@ -17,6 +17,7 @@
         <module>spring-annotation</module>
         <module>spring-mybatis</module>
         <module>redis</module>
+        <module>dubbo</module>
     </modules>
 
     <properties>
