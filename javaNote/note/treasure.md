@@ -223,7 +223,9 @@
 
     + evicition：缓存的回收策略 LRU、FIFO、软引用、弱引用
     + flusInternval：缓存的刷新时间
-    + readOnly：true表示只读操作myabtis直接返回缓存的引用，速度较快；false的话表示有可能修改，mybatis会将数据进行序列化
+    + readOnly：
+      + true表示只读操作myabtis直接返回缓存的引用，速度较快；
+      + false的话表示有可能修改，mybatis会将数据进行序列化
   
 
 #### 2.4.2mybatis的执行流程
@@ -247,17 +249,27 @@
 
   + localCacheScope：本地缓存作用域
 
-+ 首先通过全局配置文件，通过Resource.getResourceAssTream()方法构建SqlSessionFactory，通过配置文件下，创建一个Configuration的对象此对象包含了所有的配置和MapStatement
 
+![image-20211005184942272](../image/image-20211005184942272.png)
+
+
+
+#### 2.4.3 原理
+
+![image-20211005191125775](../image/image-20211005191125775.png)
+
+
+
+
+
++ 首先通过全局配置文件，通过Resource.getResourceAssTream()方法构建SqlSessionFactory，通过配置文件下，创建一个Configuration的对象此对象包含了所有的配置和MapStatement
 + 获取SqlSession
   
   + 创建Executor对象，判断Executor类型创建对应的Executor，如果配置了二级缓存则使用CachingExecutor，调用所有拦截器的plugin方法
   + 将executor和configuation封装成defaultSqlSession返回，这个sqlsession不是线程安全的
-  
 + getMapper
 
     + 通过Configuration对象中的mapperRegistry 创建一个MapperProxy代理对象，这个代理对象里包含了Executor
-
 + 执行Sql
 
     + 判断增删改查类型创建一个Executor
