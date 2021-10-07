@@ -1,6 +1,8 @@
 package com.lee.mybatis;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.lee.dao.UserDao;
 import com.lee.entity.User;
 import org.apache.ibatis.io.Resources;
@@ -16,6 +18,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 
 public class Test1 {
 
@@ -63,5 +66,19 @@ public class Test1 {
         configuration.addMapper(UserDao.class);
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 
+    }
+
+
+    @Test
+    public void testPage() throws IOException {
+        InputStream inputStream = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        UserDao userDao = sqlSession.getMapper(UserDao.class);
+        Page<Object> objects = PageHelper.startPage(1, 3);
+        List<User> users = userDao.selectAllUser();
+        System.out.println(objects.getTotal());
+        System.out.println(objects.getPageNum());
+        System.out.println(users.toString());
     }
 }

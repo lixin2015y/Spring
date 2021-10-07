@@ -13,6 +13,13 @@
     <typeAliases>
         <package name="com.lee.entity.*"/>
     </typeAliases>
+    <plugins>
+        <plugin interceptor="com.lee.plugin.MyPlugin">
+            <property name="name" value="li xin"/>
+        </plugin>
+        <plugin interceptor="com.lee.plugin.MySecondPlugin"></plugin>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
@@ -27,4 +34,6 @@
     <mappers>
         <mapper resource="mappers/UserMapper.xml"/>
     </mappers>
+
+
 </configuration>

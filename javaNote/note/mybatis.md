@@ -262,3 +262,98 @@ public Object execute(SqlSession sqlSession, Object[] args) {
 }
 ```
 
+### 2.5 插件的使用
+
+#### 2.5.1 分析
+
+```java
+@Intercepts(
+        {
+                // 拦截设置参数方法
+                @Signature(type = StatementHandler.class, method = "parameterize", args = Statement.class)
+        }
+)
+public class MyPlugin implements Interceptor {
+
+    @Override
+    public Object intercept(Invocation invocation) throws Throwable {
+        System.out.println("调用MyPlugin.intercept方法，拦截：" + invocation.getMethod().getName());
+        Object proceed = invocation.proceed();
+        return proceed;
+    }
+
+    @Override
+    public Object plugin(Object target) {
+        System.out.println("调用MyPlugin.plugin方法，");
+        return Plugin.wrap(target, this);
+    }
+
+    @Override
+    public void setProperties(Properties properties) {
+        System.out.println("调用MyPlugin.setProperties方法：" + properties.toString());
+
+    }
+}
+```
+
+```xml
+<plugins>
+    <plugin interceptor="com.lee.plugin.MyPlugin">
+        <property name="name" value="li xin"/>
+    </plugin>
+</plugins>
+```
+
++ 解析
+
+```java
+// 解析plugins标签
+pluginElement(root.evalNode("plugins"));
+
+// 调用setProperties
+interceptorInstance.setProperties(properties);
+// 保存所有的插件
+configuration.addInterceptor(interceptorInstance);
+
+// openSession的时候创建Executer，在此处会调用plugin方法
+executor = (Executor) interceptorChain.pluginAll(executor);
+target = interceptor.plugin(target);
+
+// 根据注解配置，判断是否创建代理对象（对目标对象进行包装）
+public static Object wrap(Object target, Interceptor interceptor) {
+    Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
+    Class<?> type = target.getClass();
+    Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
+    if (interfaces.length > 0) {
+      return Proxy.newProxyInstance(
+          type.getClassLoader(),
+          interfaces,
+          new Plugin(target, interceptor, signatureMap));
+    }
+    return target;
+  }
+
+// 包装后
+
+// 包装后，会判断是否进行拦截，根绝方法配置
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    try {
+      Set<Method> methods = signatureMap.get(method.getDeclaringClass());
+      if (methods != null && methods.contains(method)) {
+        return interceptor.intercept(new Invocation(target, method, args));
+      }
+      return method.invoke(target, args);
+    } catch (Exception e) {
+      throw ExceptionUtil.unwrapThrowable(e);
+    }
+  }
+```
+
+#### 2.5.2 多插件的使用
+
+层层包装，先注册的先包装，最后调用
+
+![image-20211006110112244](../image/image-20211006110112244.png)
+
+#### 2.5.3 批量操作
+
