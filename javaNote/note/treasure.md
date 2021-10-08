@@ -131,7 +131,48 @@
 + threadFactory：用于创建线程
 + handler（线程饱和策略）：当线程池和队列都满的时候会加入此逻辑
 
-#### 1.4.3
+#### 1.4.3 jvm内存模型
+
++ 虚拟机栈、本地方法栈、程序计数器
++ 堆、方法区（运行时常量池）
+
+#### 1.4.4 类加载过程
+
++ 加载、验证、准备、解析、初始化、使用、卸载
++ 根据全类名加载进虚拟机内存、验证类文件结构（魔数、版本号、常量池语法、类继承规范）等
++ 给类变量赋初值  基本类型和引用类型对应零值
++ 将符号引用转化为直接引用
++ 根据构造方法，按照程序意图来给类变量赋初值
+
+#### 1.4.5 java8默认的垃圾收集器
+
+java -XX:+PrintGCDetails -version 命令
+
++ Parallel Scavenge（新生代）
+  + 吞吐量优先
+  + 年轻代
+  + 复制算法多线程回收
+
++ Parallel Old（老年代）
+  + 标记-整理算法
+  + 老年代
+  + 
+
+#### 1.4.6 CMS
+
++ 标记一清除算法
++ 低延迟，快速响应
++ 老年代
+  + 初始标记：标记与GCROOT直接相关联的，STW时间特别短
+  + 并发标记：不需要STW，可以与用户线程同事进行
+  + 重新标记：对已经标记的对象进行检测，
+  + 并发清除：
+
+#### 1.4.7 G1
+
++ 延迟可控情况下，尽可能提高吞吐量
++ 将内存分为多个区间， G1通过每次只清理一部分而不是全部的Region的增量式清理来保证每次GC停顿时间不会过长
++ 基于复制算法
 
 # 2.框架篇
 
@@ -200,9 +241,71 @@
 + DispatcherServlet将Model传给View
 + 将View返回给请求者
 
+#### 2.2.3 ResponseBody注解的原理
 
+#### 2.2.4 spring事务传播
 
-### 2.3Springboot
+#### 2.2.5 springboot如何实现自动配置（启动流程）
+
+#### 2.2.6 FactoryBean原理
+
+#### 2.2.7 如何实现autowired，如何注入底层组件（ApplicationContext、）
+
+作用位置
+
++ 构造器：默认的spring会调用无参构造器，在对属性进行赋值。注解在构造器上，则spring使用构造器进行赋值注入，构造器参数从容器中拿，如果只有一个有参构造器，则可以省略该注解
++ set方法：依赖注入使用set方法赋值，set方法中参数从容器中取
++ 参数和属性
+
+注入底层bean
+
++ 自定义类实现xxxAware，spring启动的时候会进行回调（后置处理器，例如ApplicationContextAwareProcessor），将对应的参数传入回调方法
+
+autowired实现原理
+
++ 
+
+#### 2.2.8 spring AOP实现原理
+
++ @EnableAspectJAutoProxy  内部使用@import（实现beandefineationregistryer接口方式）引入一个组件
+
++ 这个组件引入了一个AnnotationAwareAspectJAutoProxyCreator.class自动代理创建器
+
++ 自动代理创建器继承自AbstractAutoProxyCreator并且实现了SmartInstantiationAwareBeanPostProcessor和BeanFactoryAware接口
+
++ SmartInstantiationAwareBeanPostProcessor在bean初始化前后调用，BeanFactoryAware可以实现beanFactory的装配
+
++ 容器启动会将该类注册到beanPostPorcessor中
+
++ 在bean创建过程
+
+  + 实例化
+  + 属性赋值
+  + 初始化
+    + 回调用Aware接口（BeanFactoryAware）
+    + 调用后置处理器before方法
+    + 调用初始化方法
+    + 调用后置处理器after方法
+
++ 在后置处理器的before方法中
+
+  ```java
+  try {
+     // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+     Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+     if (bean != null) {
+        return bean;
+     }
+  }
+  ```
+
+#### 2.2.9 BeanPostProcessor和InstantiationAwareBeanPostProcessor有什么区别
+
+后者继承与前者
+
+后者回调在创建bean之前，给一个机会返回一个代理对象，
+
+前者执行在对象初始化前后
 
 ### 2.4Mybatis
 
