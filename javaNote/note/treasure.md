@@ -298,6 +298,77 @@ autowired实现原理
      }
   }
   ```
+  
++ 顶层代理创建器抽象类，回调方法在创建bean之前调用，
+
+  每一个bean创建之前都会调用
+
+  advisedBeans保存了所有增强的bean，这里需要判断
+
+  ```java
+  public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+     Object cacheKey = getCacheKey(beanClass, beanName);
+  
+     if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+        if (this.advisedBeans.containsKey(cacheKey)) {
+           return null;
+        }
+        if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
+           this.advisedBeans.put(cacheKey, Boolean.FALSE);
+           return null;
+        }
+     }
+  
+     // Create proxy here if we have a custom TargetSource.
+     // Suppresses unnecessary default instantiation of the target bean:
+     // The TargetSource will handle target instances in a custom fashion.
+     TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
+     if (targetSource != null) {
+        if (StringUtils.hasLength(beanName)) {
+           this.targetSourcedBeans.add(beanName);
+        }
+        Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
+        Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
+        this.proxyTypes.put(cacheKey, proxy.getClass());
+        return proxy;
+     }
+  
+     return null;
+  }
+  ```
+
+  bean初始化后，
+
+  1、从前面的增强器集合中判断，判断当前bean可以使用的增强器，给增强器进行排序
+
+  2、增强器的集合不为空，则创建bean的代理对象
+
+  3、创建代理
+
+  	 + 获取所有增强器
+  	 + 把增强器保存到代理工厂对象中，proxyFactory
+  	 + 如果实现了接口，则调用jdk动态代理，否则调用cglib动态代理
+
+  
+
+  ```java
+  
+  
+  @Override
+  public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
+     if (bean != null) {
+        Object cacheKey = getCacheKey(bean.getClass(), beanName);
+        if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+           return wrapIfNecessary(bean, beanName, cacheKey);
+        }
+     }
+     return bean;
+  }
+  ```
+
+
+
+
 
 #### 2.2.9 BeanPostProcessor和InstantiationAwareBeanPostProcessor有什么区别
 

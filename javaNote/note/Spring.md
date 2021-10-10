@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 # Spring
 
 ## IOC
@@ -191,100 +199,170 @@ public class LogAspects {
 
 ### AOP的原理
 
-+ 通过@EnableAspectJAutoProxy实现AOP，他里面导入了一个AspectJAutoProxyRegistrar.class组件
+##### 1. 导入自动代理创建器组件
 
-  ```java
-  @Target(ElementType.TYPE)
-  @Retention(RetentionPolicy.RUNTIME)
-  @Documented
-  @Import(AspectJAutoProxyRegistrar.class)
-  public @interface EnableAspectJAutoProxy {
-  
-  	boolean proxyTargetClass() default false;
-  
-  	boolean exposeProxy() default false;
++ 顶层注解@EnableAspectJAutoProxy使用@import注解导入AspectJAutoProxyRegistrar.class
++ AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar
++ 在这个方法中注册了一个AnnotationAwareAspectJAutoProxyCreator组件
+
+##### 2. 两个回调方法
+
++ 这个自动代理创建器层层继承，顶层类AbstractAutoProxyCreator实现了SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware接口，
+
++ SmartInstantiationAwareBeanPostProcessor接口作为一个beanPostPorcessor，有四个回调方法
+
+  比较重要的有
+
+  + ```java
+    // 此方法在创建bean对象之前调用
+    postProcessBeforeInstantiation
+        
+    // 判断档期那bean是否已经在advisedBeans中，advisedBeans保存了所有需要增强（被代理）的bean
+    // 判断bean是否是切面，是否实现了Adivce、Pointcut、Advisor或者标注了@Aspect注解
+    // 判断是否实现了TargetSourceCreator接口，如果实现该接口则在此就创建代理
+    // 允许在bean初始化前创建代理
+    ```
+
+  + ```java
+    // 此方法在bean初始化之后调用
+    postProcessAfterInitialization
+    
+    // 查找所有的advicer增强器，从中找到当前bean可以用的
+    // 对增强器集合进行排序
+    // 创建代理对象（如果实现了接口，则使用jdk否则使用cglib）
+    // 给容器中直接返回增强过的代理对象
+    // 代理对象会封装所有的增强器
+    ```
+
+##### 3. 目标方法的执行
+
+ 代理对象保存了所有增强器
+
++ 获取将要执行的目标方法拦截器链
+
+  + 遍历所有增强器，转化为Inteceptor数组(MethodInterceptor)
+
++ 如果拦截器链为空，则直接调用目标对象的invoke方法
+
++ 如果有拦截器链，把目标对象、目标方法、拦截器链封装成一个CglibMethodInvocation，然后调用他的proceed方法
+
+  + 通过currentInterceptorIndex=-1来记录当前拦截器的索引，如果currentInterceptorIndex=数组大小-1则表示没有拦截器，或者已经执行到最后一个拦截器
+
+    ![image-20211009235909504](../image/image-20211009235909504.png)
+
+
+
+使用类似上面的链式执行来控制通知方法的执行
+
+正常执行：前置-后置-返回
+
+异常执行：前置-后置-异常
+
+
+
+## 声明式事务
+
+### 1. 使用
+
++ 使用@EnableTransactionManagement开启事务
+
++ 配置数据源
+
++ 注入事务管理器
+
++ 使用@Transactional注解
+
++ ```java
+  // 事务管理器顶层都是PlatformTransactionManager接口，我们常用的就是DataSourceTransactionManager实现
+  @Bean
+  PlatformTransactionManager transactionManager(@Autowired DataSource dataSource){
+      return new DataSourceTransactionManager(dataSource);
   }
   ```
 
+### 2. 原理
+
++ @EnableTransactionManagement注解中@import注解导入两个组件
++ 组件1：AutoProxyRegistrar.class
+  + 利用后置处理器，拦截目标对象，返回一个代理对象，封装了拦截器链
+
++ 组件2：ProxyTransactionManagementConfiguration.class
+  	+  拿到事务注解的信息，
+   +  拦截器
+      	+  获取事务相关属性，获取事务管理器
+       +  执行目标方法
+          	+  异常，回滚事务
+          	+  非异常，提交事务
+
+
+
+## 几种beanPostPorcessor的加载时机
+
+### BeanFactoryPostProcessor
+
+beanfactory创建完成之后，可以修改bean的定义信息
+
+### BeanDefinitionRegistryPostProcessor
+
+bean定义被加载，之后修改bean定义信息
+
+## 事件监听（事件驱动模型）
+
+### 1. 使用
+
++ 写一个监听器，监听ApplicationEvent下面的事件
+
++ 把监听器放到容器中
+
++ 只有有相关类型的时间发送则会监听到这个事件，常用事件
+
+  + finishRefresh方法中，发布ContextRefreshEvent
+  + 容器关闭，发布ContextCloseEvent
+
++ 发布事件
+
+  + ```java
+    ApplicationEvent applicationEvent = new ApplicationEvent("我发布了事件"){};
+    context.publishEvent(applicationEvent);
+    ```
+
+### 2. 原理
+
++ 获取事件多播器
+
++ ```
+  // 获取当前事件所有子集的事件，可以多线程异步的执行，回调时间监听器中的onApplicationEvent方法
+  getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType)
   
-
-+ AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar（这个借口可以实现自动注册bean）
-
-  > 这个东西注册了一个AnnotationAwareAspectJAutoProxyCreator组件
-
-  ```java
-  class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar{
-      @Override
-  	public void registerBeanDefinitions(
-  			AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-  	AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
-  		AnnotationAttributes enableAspectJAutoProxy =
-  				AnnotationConfigUtils.attributesFor(importingClassMetadata, EnableAspectJAutoProxy.class);
-  		if (enableAspectJAutoProxy != null) {
-  			if (enableAspectJAutoProxy.getBoolean("proxyTargetClass")) {
-  				AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
-  			}
-  			if (enableAspectJAutoProxy.getBoolean("exposeProxy")) {
-  				AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
-  			}
-  		}
-  	}
-  }
+  ;
   ```
 
-+ AnnotationAwareAspectJAutoProxyCreator的作用
++ 事件多播器初始化
 
-  ​	![](../img/AspectJAwareAdvisorAutoProxyCreator.png)
+  + 如果容器中注册了组件，就用容器中的，如果没有，就创建一个默认的
+  + 注册监听器，拿到所有监听器（type为applicationevent类型的），放入到多播器中
 
-  + 他的父类AbstractAutoProxyCreator实现了SmartInstantiationAwareBeanPostProcessor后置处理器和BeanFactoryAware
+### 3. 通过@eventListener实现监听器
 
-    ```java
-    public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
-    		implements SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware {
+```java
+@EventListener(classes = ApplicationEvent.class)
+    public void listen(ApplicationEvent applicationEvent) {
+        System.out.println("使用注解完成事件" + applicationEvent.toString());
     }
-    ```
+}
+```
 
-  + 在AbstractAdvisorAutoProxyCreator中重写了setBeanFactory（）在此处还会调用
+#### 原理
 
-    ```java
-    public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyCreator {
-    	@Override
-    	public void setBeanFactory(BeanFactory beanFactory) {
-    		super.setBeanFactory(beanFactory);
-    		if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
-    			throw new IllegalArgumentException(
-    					"AdvisorAutoProxyCreator requires a ConfigurableListableBeanFactory: " + beanFactory);
-    		}
-    		initBeanFactory((ConfigurableListableBeanFactory) beanFactory);
-    	}
-    
-    	protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-    		this.advisorRetrievalHelper = new BeanFactoryAdvisorRetrievalHelperAdapter(beanFactory);
-    	}
-    }
-    ```
+通过EventListenerMethodProcessor后置处理器来完成，实现了SmartInitializingSingleton这个借口
 
-    
-
-  + AnnotationAwareAspectJAutoProxyCreator这个类又重写了initBeanFactory（）方法
-
-    ```java
-    @Override
-    	protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-    		super.initBeanFactory(beanFactory);
-    		if (this.aspectJAdvisorFactory == null) {
-    			this.aspectJAdvisorFactory = new ReflectiveAspectJAdvisorFactory(beanFactory);
-    		}
-    		this.aspectJAdvisorsBuilder =
-    				new BeanFactoryAspectJAdvisorsBuilderAdapter(beanFactory, this.aspectJAdvisorFactory);
-    	}
-    ```
-
-+ 流程：
+这个借口回调方法会在所有单实例bean创建完成后调用
 
 
 
-## IOC启动原理
+
+
+### IOC启动原理
 
 ### 1、prepareRefresh()刷新前的预处理工作
 
