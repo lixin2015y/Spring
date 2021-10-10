@@ -292,7 +292,7 @@ public class LogAspects {
       	+  获取事务相关属性，获取事务管理器
        +  执行目标方法
           	+  异常，回滚事务
-          	+  非异常，提交事务
+             	+  非异常，提交事务
 
 
 
@@ -362,7 +362,7 @@ bean定义被加载，之后修改bean定义信息
 
 
 
-### IOC启动原理
+## IOC启动原理
 
 ### 1、prepareRefresh()刷新前的预处理工作
 
@@ -528,3 +528,47 @@ bean定义被加载，之后修改bean定义信息
     + 获取当前bean所依赖的其他Bean，如果有则按照GetBean的方式获取
     + 
 
+
+
+## servlet启动
+
+### springmvc启动
+
+servlet容器启动会扫描所有的jar包找serveltContainerInitializer的实现类，会调用实现类中的启动方法
+
+回调onstartup方法，在onstartup方法内可以注册组件
+
+```java
+void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException;
+// 第一个参数可以通过@HandlesType 将我们需要的类传递进来
+// 第二个参数
+```
+
+通过@HandlesType注解可以实现将我们需要的类及其子类，传递到onstartup方法
+
+spring启动使用SpringServletContainerInitializer，在这个回调方法里面创建一个WebApplicationContext对象
+
+初始化dispatchservlet
+
+将dispatchservlet添加到servletcontext
+
+## springboot的启动流程
+
+### 1. 核心注解
+
+@SpringBootApplication注解包含了
+
++ @SpringBootConfiguration
++ @EnableAutoConfiguration
++ @ComponentScan
+
+### @EnableAutoConfiguration
+
++ @AutoConfigurationPackage
+  + 将主类所在包下面的组件都添加进去
+
++ 加载自动配置类@AutoConfigurationImportSelector
+  + 这个注解实现了ImportSelector接口，可以返回一个数组，表示要导入的组件
+    + 内部会加载spring.factories类里面的所有配置类（xxxAutoConfiguration）
++ 按需开启，ConditionOnxxxxxx
++ 每个配置类一半都会绑定xxxxproperties，对应spring配置我呢间里面的spring.xxxx.xxxx
