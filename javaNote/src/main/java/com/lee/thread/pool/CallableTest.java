@@ -13,6 +13,5 @@ public class CallableTest implements Callable {
     public static void main(String[] args) {
         new Thread().start();
         CallableTest callableTest = new CallableTest();
-
     }
 }
