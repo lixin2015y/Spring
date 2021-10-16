@@ -1,6 +1,7 @@
 package com.lee.juc.share;
 
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -10,9 +11,9 @@ import java.util.concurrent.locks.ReentrantLock;
  **/
 public class ThreadDemo3Resource {
     // 1 aa,2 bb,3 cc
-    private int signal;
+    private int signal = 1;
 
-    private ReentrantLock lock = new ReentrantLock();
+    private Lock lock = new ReentrantLock();
     // 创建三个condition
     private Condition c1 = lock.newCondition();
     private Condition c2 = lock.newCondition();
@@ -24,9 +25,7 @@ public class ThreadDemo3Resource {
             while (signal != 1) {
                 c1.await();
             }
-            for (int i = 0; i < 5; i++) {
-                System.out.println(Thread.currentThread().getName() + ":" + count);
-            }
+            System.out.println(Thread.currentThread().getName() + ":" + count);
             signal = 2;
             c2.signal();
         } catch (InterruptedException e) {
@@ -42,9 +41,7 @@ public class ThreadDemo3Resource {
             while (signal != 2) {
                 c2.await();
             }
-            for (int i = 0; i < 10; i++) {
-                System.out.println(Thread.currentThread().getName() + ":" + count);
-            }
+            System.out.println(Thread.currentThread().getName() + ":" + count);
             signal = 3;
             c3.signal();
         } catch (InterruptedException e) {
@@ -58,11 +55,9 @@ public class ThreadDemo3Resource {
         lock.lock();
         try {
             while (signal != 3) {
-                c2.await();
+                c3.await();
             }
-            for (int i = 0; i < 10; i++) {
-                System.out.println(Thread.currentThread().getName() + ":" + count);
-            }
+            System.out.println(Thread.currentThread().getName() + ":" + count);
             signal = 1;
             c1.signal();
         } catch (InterruptedException e) {
@@ -72,6 +67,27 @@ public class ThreadDemo3Resource {
         }
     }
 
-
+    /**
+     * 让三个线程按照顺序打印，这里使用test方法不行，不知道为什么
+     * @param args
+     */
+    public static void main(String[] args) {
+        ThreadDemo3Resource resource = new ThreadDemo3Resource();
+        new Thread(() -> {
+            for (int i = 0; i < 15; i++) {
+                resource.print5(i);
+            }
+        }, "AA").start();
+        new Thread(() -> {
+            for (int i = 0; i < 15; i++) {
+                resource.print10(i);
+            }
+        }, "BB").start();
+        new Thread(() -> {
+            for (int i = 0; i < 15; i++) {
+                resource.print15(i);
+            }
+        }, "CC").start();
+    }
 
 }
