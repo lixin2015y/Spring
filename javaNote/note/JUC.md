@@ -62,7 +62,7 @@ thread.start();
 System.out.println(Thread.currentThread().getName() + ":over");
 ```
 
-### 2. Lock接口
+### 2. 锁接口
 
 #### 2.1 Synchronized
 
@@ -84,6 +84,24 @@ System.out.println(Thread.currentThread().getName() + ":over");
 
 
 
-#### 2.2
+#### 2.2 Lock锁和synchronized有什么区别
 
-#### 2.3
++ Lock是一个接口，synchronized是java关键字
++ lock不会自动释放锁，synchronized会自动释放锁
++ lock可以让等待的线程相应终端，而synchronized不行，使用synchronized，线程会一直等待下去，不能沟进行中断
+
+### 3. 线程间通信
+
+#### 3.1 虚假唤醒
+
+wait在哪里等待，就会在哪里醒，所以要是用
+
+所以要使用while来替代if，循环判断
+
+#### 3.2 线程间的定制化通信
+
+启动三个线程，10轮循环以下
+
++ AA执行，打印5次
++ BB执行，打印10次
++ CC线程，打印15次
