@@ -20,7 +20,9 @@ public class BinarySearch {
         int r = n - 1;
         // 在[l,r]区间中寻找target
         while (l <= r) {
-            int mid = (l + r) / 2;
+            // 使用减法替换加法防止移除问题
+//            int mid = (l + r) / 2;
+            int mid = l + (r - l) / 2;
             if (arr[mid] == target) {
                 return mid;
             }
