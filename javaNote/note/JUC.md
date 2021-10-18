@@ -105,3 +105,68 @@ wait在哪里等待，就会在哪里醒，所以要是用
 + AA执行，打印5次
 + BB执行，打印10次
 + CC线程，打印15次
+
+### 4. 线程安全的集合类
+
+#### 4.1 List线程安全解决办法
+
++ List<String> list = new Vector<>();
++ Collections.synchronizedList(list);
++ CopyOnWriteArrayList ，写时赋值技术
+  + 复制、写入、合并、读取新内容
+
+#### 4.2 HashSet线程安全解决办法
+
++ CopyOnWriteArraySet
+
+#### 4.3 HashMap线程安全解决办法
+
++ ConcurrentHashMap
++ HashTable
+
+### 5. 死锁
+
+#### 5.1 重现死锁
+
+```java
+new Thread(() -> {
+    synchronized (a) {
+        System.out.println(Thread.currentThread().getName() + "持有锁A，获取锁B");
+        synchronized (b) {
+            System.out.println(Thread.currentThread().getName() + "获取到锁B");
+        }
+    }
+}, "AA").start();
+
+new Thread(() -> {
+    synchronized (b) {
+        System.out.println(Thread.currentThread().getName() + "持有锁B，获取锁A");
+        synchronized (a) {
+            System.out.println(Thread.currentThread().getName() + "获取到锁A");
+        }
+    }
+}, "BB").start();
+```
+
+#### 5.2 检测死锁的方法
+
+使用jps找到线程号，使用jstack 线程号 来看堆栈信息
+
+Java stack information for the threads listed above:
+
+"BB":
+        at com.lee.juc.deadLock.DeadLock.lambda$main$1(DeadLock.java:22)
+        - waiting to lock <0x000000076b0aebf0> (a java.lang.Object)
+        - locked <0x000000076b0aec00> (a java.lang.Object)
+        at com.lee.juc.deadLock.DeadLock$$Lambda$2/1922154895.run(Unknown Source)
+        at java.lang.Thread.run(Thread.java:748)
+"AA":
+        at com.lee.juc.deadLock.DeadLock.lambda$main$0(DeadLock.java:13)
+        - waiting to lock <0x000000076b0aec00> (a java.lang.Object)
+        - locked <0x000000076b0aebf0> (a java.lang.Object)
+        at com.lee.juc.deadLock.DeadLock$$Lambda$1/793589513.run(Unknown Source)
+        at java.lang.Thread.run(Thread.java:748)
+
+Found 1 deadlock.
+
+### 6. Callable接口
