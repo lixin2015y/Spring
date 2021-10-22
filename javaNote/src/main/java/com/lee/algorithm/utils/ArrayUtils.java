@@ -11,4 +11,15 @@ public class ArrayUtils {
     }
 
 
+    /**
+     * 交换数组中的元素
+     * @param arr
+     * @param i
+     * @param j
+     */
+    public static void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
 }

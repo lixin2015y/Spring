@@ -157,16 +157,103 @@ Java stack information for the threads listed above:
 "BB":
         at com.lee.juc.deadLock.DeadLock.lambda$main$1(DeadLock.java:22)
         - waiting to lock <0x000000076b0aebf0> (a java.lang.Object)
-        - locked <0x000000076b0aec00> (a java.lang.Object)
-        at com.lee.juc.deadLock.DeadLock$$Lambda$2/1922154895.run(Unknown Source)
-        at java.lang.Thread.run(Thread.java:748)
+                - locked <0x000000076b0aec00> (a java.lang.Object)
+                at com.lee.juc.deadLock.DeadLock$$Lambda$2/1922154895.run(Unknown Source)
+                at java.lang.Thread.run(Thread.java:748)
 "AA":
-        at com.lee.juc.deadLock.DeadLock.lambda$main$0(DeadLock.java:13)
-        - waiting to lock <0x000000076b0aec00> (a java.lang.Object)
-        - locked <0x000000076b0aebf0> (a java.lang.Object)
-        at com.lee.juc.deadLock.DeadLock$$Lambda$1/793589513.run(Unknown Source)
-        at java.lang.Thread.run(Thread.java:748)
+                at com.lee.juc.deadLock.DeadLock.lambda$main$0(DeadLock.java:13)
+                - waiting to lock <0x000000076b0aec00> (a java.lang.Object)
+                        - locked <0x000000076b0aebf0> (a java.lang.Object)
+                        at com.lee.juc.deadLock.DeadLock$$Lambda$1/793589513.run(Unknown Source)
+                        at java.lang.Thread.run(Thread.java:748)
 
 Found 1 deadlock.
 
 ### 6. Callable接口
+
+#### 6.1 callable和runnable接口的区别
+
++ callable接口有返回值
++ callable可以跑出异常
++ callable使用call方法，runnable使用run方法
+
+#### 6.2 代码示例
+
+```java
+public class CallableDemo implements Callable {
+    @Override
+    public Integer call() throws Exception {
+        System.out.println(Thread.currentThread().getName());
+        return 100;
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        CallableDemo callableDemo = new CallableDemo();
+        FutureTask<Integer> futureTask = new FutureTask<Integer>(callableDemo);
+        new Thread(futureTask, "AA").start();
+        Integer integer = futureTask.get();
+        System.out.println(integer);
+    }
+}
+```
+
+### 7. JUC辅助类
+
+#### 7.1 CountDownLatch 减少计数
+
+```java
+public static void main(String[] args) throws InterruptedException {
+    CountDownLatch countDownLatch = new CountDownLatch(6);
+    for (int i = 0; i < 6; i++) {
+        new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + "走了");
+            countDownLatch.countDown();
+        }).start();
+    }
+    countDownLatch.await();
+    System.out.println(Thread.currentThread().getName() + "班长锁门了");
+}
+```
+
+#### 7.2 CyclicBarrier
+
+```java
+CyclicBarrier cyclicBarrier = new CyclicBarrier(7, () -> {
+    System.out.println(Thread.currentThread().getName() + "找齐七科龙珠，召唤神龙");
+});
+
+for (int i = 0; i < 7; i++) {
+    new Thread(() -> {
+        System.out.println(Thread.currentThread().getName() + "找到龙珠");
+        try {
+            cyclicBarrier.await();
+        } catch (InterruptedException | BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+    }, String.valueOf(i)).start();
+}
+```
+
+#### 7.3 Semaphore信号灯
+
+```java
+// 创建许可
+Semaphore semaphore = new Semaphore(3);
+for (int i = 0; i < 6; i++) {
+    new Thread(() -> {
+        try {
+            semaphore.acquire();
+            System.out.println(Thread.currentThread().getName() + "抢到车位");
+            TimeUnit.SECONDS.sleep(new Random().nextInt(5));
+            System.out.println(Thread.currentThread().getName() + "离开车位");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            semaphore.release();
+        }
+    }, String.valueOf(i)).start();
+}
+```
+
+### 8. 读写锁
+
