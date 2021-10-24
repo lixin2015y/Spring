@@ -257,3 +257,169 @@ for (int i = 0; i < 6; i++) {
 
 ### 8. 读写锁
 
+### 9. 阻塞队列
+
+#### 9.1 阻塞队列概述
+
++ 当队列是空的时候，从队列中获取元素会阻塞
++ 当队列是满的时候，向队列中放入元素会阻塞
+
+好处：不需要关系什么时候进行阻塞，什么时候需要唤醒
+
+#### 9.2 阻塞队列架构
+
++ ArrayBlockingQueue 数组结构组成有界队列，获取和添加使用同一个锁，不能同时进行
++ LinkedBlockingQueue链表组成的无界的队列，大小默认值长度为Integer.MAX_VALUE
++ DelayQueue 延迟队列
++ SynchronousQueue单个元素队列
++ PriorityBlockingQueue 优先队列
+
+#### 9.3 核心方法
+
++ add()，如果队列已经满则跑出异常
++ remove()，如果对列是空的则会抛出异常
+
+
+
++ offer(): 添加成功返回true，队列满添加失败返回false 。
+  + 此方法可以设置阻塞时间
++ poll()，队列为空则返回空，不为空则返回元素
+  + 此方法可以设置阻塞时间
+
+
+
++ put()，队列满则会阻塞
++ take(), 队列为空则阻塞
+
+
+
+### 10. 线程池
+
+#### 10.1 线程池的优点
+
++ 降低创建销毁线程的资源消耗
++ 提高响应速度，任务到达即可执行，不需要等待创建线程
++ 提高线程的可管理性
+
+#### 10.2 线程池的架构
+
+<img src="../image/image-20211024093132446.png" alt="image-20211024093132446" style="zoom:80%;" />
+
+#### 10.3 线程池的使用
+
+##### 10.3.1 newFixedThreadPool
+
+固定线程数的线程池，超过线程数的线程会被提交到阻塞队列等待
+
+##### 10.3.2 newSingleThreadExecutor
+
+一池一线程，
+
+##### 10.3.3 newCachedThreadPool
+
+线程池数量可以扩容，遇强则强
+
+#### 10.4 线程池的七大参数 ThreadPoolExecutor
+
++ int corePoolSize
+  + 核心线程数量，如果当前线程数未达到这个数，则优先创建新的线程
++ int maximumPoolSize
+  + 最大线程数，超过这个数量的线程，会先进入阻塞队列中
++ long keepAliveTime 
+  + 超过核心线程数的线程无任务状态存活时间
++ TimeUnit unit
++ BlockingQueue<Runnable> workQueue
+  + 阻塞队列
++ ThreadFactory threadFactory
+  + 线程创建工厂
++ RejectedExecutionHandler handler
+  + 拒绝策略
+
+#### 10.5 四种基本拒绝策略
+
++ 默认，直接抛出异常
++ 将任务回退到调用者
++ 摒弃队列中等待最久的任务，将当前任务加入到队列中
++ 默默丢弃当前任务，什么也不做
+
+### 11. fork/join分支合并框架
+
+> 可以将一个大的任务拆分，分成多个子任务，并将子任务结果进行合并输出
+
+
+
+```java
+package com.lee.juc.forkjoin;
+
+
+import javax.xml.stream.events.ProcessingInstruction;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+
+class MyTask extends RecursiveTask<Integer> {
+
+    // 计算10以内的计算
+    private static final Integer VALUE = 10;
+
+    // 拆分开始值
+    private int begin;
+    // 拆分结束值
+    private int end;
+    // 返回结果
+    private int result;
+
+    public MyTask(int begin, int end) {
+        this.begin = begin;
+        this.end = end;
+    }
+
+    @Override
+    protected Integer compute() {
+        if ((end - begin) < VALUE) {
+            for (int i = begin; i <= end; i++) {
+                result = result + i;
+            }
+        } else {
+            // 获取数据中间值
+            int middle = (begin + end) / 2;
+            MyTask taskLeft = new MyTask(begin, middle);
+            MyTask taskRight = new MyTask(middle + 1, end);
+            taskLeft.fork();
+            taskRight.fork();
+            result = taskLeft.join() + taskRight.join();
+        }
+        return result;
+    }
+}
+
+public class ForkJoinDemo {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        MyTask myTask = new MyTask(1, 100);
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        ForkJoinTask<Integer> submit = forkJoinPool.submit(myTask);
+        Integer integer = submit.get();
+        System.out.println(integer);
+
+        // 关闭池对象
+        forkJoinPool.shutdown();
+    }
+}
+```
+
+### 12. 异步回调
+
+```java
+ CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
+            System.out.println(Thread.currentThread().getName());
+            // 这里可以模拟异常情况，
+//            int a = 1 / 0;
+            return 1024;
+        });
+        completableFuture.whenComplete((result, exp) -> {
+            System.out.println("result = " + result);
+            System.out.println("exp.getMessage() = " + exp.getMessage());
+        }).get();
+```
+
