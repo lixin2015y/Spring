@@ -107,6 +107,14 @@
 
 #### 1.2.4ConcurrentHashMap
 
+> 1.7版本
+
++ 使用分段数组Segment+链表，容器中会有多个segment，每个segment都相当于是一个hashmap
++ 需要进行两次hash，第一次定位到segment，第二次定位到当前segment的数组下标
++ 使用ReentrantLock加锁锁当前segment的写操作，读不加锁，使用volatile进行控制，保证多线程可见性，
+
+> 1.8版本
+
 + 
 
 ### 1.3java虚拟机
