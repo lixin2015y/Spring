@@ -1,4 +1,4 @@
-## JUC
+## 一、JUC
 
 ### 1.什么是JUC
 
@@ -423,3 +423,36 @@ public class ForkJoinDemo {
         }).get();
 ```
 
+## 二、多线程常见问题
+
+### 2.1 线程状态
+
++ 初始化
++ 就绪start
++ run CPU执行
++ terminate 终止
++ wait  join  等方法会让当前线程等待
++ sleep(s)、wait(s)
+
+### 2.2 守护线程
+
+> 守护线程会随着主线程消亡而消亡
+
+### 2.3 sleep、yied、join、wait、notify
+
++ sleep释放CPU，进入timeWait状态，不会释放锁
++ yied释放CPU，并且释放锁，让具有相同竞争级别的线程达到尽可能均衡的资源分配
++ join 等待join的线程执行完再指向当前线程
++ wait 当前线程进入wait状态，等待被唤醒
++ notify 唤醒当前wait状态的线程
+
+### 2.4 synconized
+
+锁升级过程
+
+- 升级过程 无锁->偏向锁->轻量级锁（自旋10次）->重量级锁（调用内核了） 无法降级
+- 偏向锁默认不开启 需要jvm参数 不开启偏向锁一旦发生竞争就是轻量级锁，偏向锁撤销需要等待safepoint
+
+### 2.5 AQS
+
+### 2.6 Exchanger
