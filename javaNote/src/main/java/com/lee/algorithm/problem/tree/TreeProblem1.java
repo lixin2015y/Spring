@@ -1,10 +1,7 @@
 package com.lee.algorithm.problem.tree;
 
-import com.lee.algorithm.utils.Tree;
+import com.lee.algorithm.utils.TreeNode;
 import com.lee.algorithm.utils.TreeUtils;
-import jdk.nashorn.internal.objects.NativeUint8Array;
-
-import javax.swing.*;
 
 /**
  * 判断一个二叉树中，是否含有一条从根到叶子节点的路径，相加数等于sum
@@ -12,7 +9,7 @@ import javax.swing.*;
  */
 public class TreeProblem1 {
 
-    private static boolean exist(Tree node, Integer sum) {
+    private static boolean exist(TreeNode node, Integer sum) {
         if (node == null) {
             return false;
         }
@@ -32,7 +29,7 @@ public class TreeProblem1 {
     }
 
     public static void main(String[] args) {
-        Tree node = TreeUtils.createTree();
+        TreeNode node = TreeUtils.createTree();
         boolean exist = exist(node, 77);
         System.out.println("exist = " + exist);
     }

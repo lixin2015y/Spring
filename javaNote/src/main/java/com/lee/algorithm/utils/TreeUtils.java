@@ -12,19 +12,19 @@ public class TreeUtils {
      * 1       6   9  11
      * @return
      */
-    public static Tree createTree() {
-        Tree tree = new Tree(15);
-        tree.left = new Tree(3);
-        tree.right = new Tree(8);
-        tree.left.left = new Tree(2);
-        tree.left.right = new Tree(4);
-        tree.left.left.left = new Tree(1);
-        tree.right.left = new Tree(7);
-        tree.right.left.left = new Tree(6);
-        tree.right.right = new Tree(10);
-        tree.right.right.left = new Tree(9);
-        tree.right.right.right = new Tree(11);
-        return tree;
+    public static TreeNode createTree() {
+        TreeNode treeNode = new TreeNode(15);
+        treeNode.left = new TreeNode(3);
+        treeNode.right = new TreeNode(8);
+        treeNode.left.left = new TreeNode(2);
+        treeNode.left.right = new TreeNode(4);
+        treeNode.left.left.left = new TreeNode(1);
+        treeNode.right.left = new TreeNode(7);
+        treeNode.right.left.left = new TreeNode(6);
+        treeNode.right.right = new TreeNode(10);
+        treeNode.right.right.left = new TreeNode(9);
+        treeNode.right.right.right = new TreeNode(11);
+        return treeNode;
     }
 
     /**
@@ -32,21 +32,21 @@ public class TreeUtils {
      *
      * @param root
      */
-    public static void print(Tree root) {
+    public static void print(TreeNode root) {
         if (root == null) {
             return;
         }
 
-        Queue<Tree> queue = new LinkedList<>();
+        Queue<TreeNode> queue = new LinkedList<>();
         queue.add(root);
         while (!queue.isEmpty()) {
-            Tree tree = queue.poll();
-            System.out.print(tree.e + "-");
-            if (tree.left != null) {
-                queue.add(tree.left);
+            TreeNode treeNode = queue.poll();
+            System.out.print(treeNode.e + "-");
+            if (treeNode.left != null) {
+                queue.add(treeNode.left);
             }
-            if (tree.right != null) {
-                queue.add(tree.right);
+            if (treeNode.right != null) {
+                queue.add(treeNode.right);
             }
         }
     }

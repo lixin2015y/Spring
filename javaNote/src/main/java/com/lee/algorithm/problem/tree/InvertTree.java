@@ -1,15 +1,14 @@
 package com.lee.algorithm.problem.tree;
 
-import com.lee.algorithm.utils.Tree;
+import com.lee.algorithm.utils.TreeNode;
 import com.lee.algorithm.utils.TreeUtils;
-import org.apache.poi.ss.formula.functions.T;
 
 /**
  * 翻转二叉树
  */
 public class InvertTree {
 
-    private static Tree invertTree(Tree root) {
+    private static TreeNode invertTree(TreeNode root) {
 
         if (root == null) {
             return null;
@@ -18,7 +17,7 @@ public class InvertTree {
         invertTree(root.right);
 
         // 翻转
-        Tree tmp = root.left;
+        TreeNode tmp = root.left;
         root.left = root.right;
         root.right = tmp;
 
@@ -26,7 +25,7 @@ public class InvertTree {
     }
 
     public static void main(String[] args) {
-        Tree root = TreeUtils.createTree();
+        TreeNode root = TreeUtils.createTree();
         TreeUtils.print(root);
         invertTree(root);
         System.out.println();

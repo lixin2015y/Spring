@@ -1,17 +1,15 @@
 package com.lee.algorithm.problem.tree;
 
 
-import com.lee.algorithm.utils.Tree;
+import com.lee.algorithm.utils.TreeNode;
 import com.lee.algorithm.utils.TreeUtils;
-
-import javax.management.MXBean;
 
 /**
  * 树的最大深度
  */
 public class MaxDepthTree {
 
-    private static int maxDepth(Tree root) {
+    private static int maxDepth(TreeNode root) {
         if (root == null) {
             return 1;
         }
@@ -19,8 +17,8 @@ public class MaxDepthTree {
     }
 
     public static void main(String[] args) {
-        Tree tree = TreeUtils.createTree();
-        System.out.println(maxDepth(tree));
+        TreeNode treeNode = TreeUtils.createTree();
+        System.out.println(maxDepth(treeNode));
     }
 
 
