@@ -39,3 +39,16 @@
 
 + id：sql执行的顺序
 + select_type：
+
+### MYSQL架构
+
+<img src="../image/image-20211104193058629.png" alt="image-20211104193058629" style="zoom:67%;" />
+
+### 问题排查语句
+
++ 查看当前执行的线程
+
+> SHOW PROCESSLIST;
+
+<img src="../image/image-20211104194335635.png" alt="image-20211104194335635" style="zoom:67%;" />
+
