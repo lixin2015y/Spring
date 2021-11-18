@@ -501,3 +501,84 @@ public class ForkJoinDemo {
 
 ### 2.6 Exchanger
 
+### 2.7 Automic原子类
+
+#### 2.7.1 偏移量
+
+> 通过传递的档期对象this可以找到对象在内存中的起始位置，在通过偏移量可以找到对应的属性
+>
+> 也就是说要想修改某个对象中的某个属性的值，必须知道这个属性的在这个对象中的偏移量
+
+#### 2.7.2 底层实现原理
+
+> atomic基于无锁算法cas，使用Unsafe的三大api compareAndSwapObject、compareAndSwapInt、
+>
+> compareAndSwapObject、compareAndSwapLong
+
+这些底层API的实现依赖于操作系统硬件原语 **CMPXCHG**实现的CAS操作，这个操作不需要切换到核心态，在用户态就可以执行
+
+#### 2.7.3 修改一个数组
+
+```
+AtomicIntegerArray
+```
+
+#### 2.7.4 修改一个对象中的属性
+
+```java
+@Test
+public void test(){
+    AtomicIntegerFieldUpdater<Student> id = AtomicIntegerFieldUpdater.newUpdater(Student.class, "old");
+    Student student = new Student(1, 25);
+    id.getAndIncrement(student);
+    System.out.println(id.get(student));
+}
+
+
+class Student {
+    private Integer id;
+    // 该属性必须是public且是volite修饰的
+    public volatile int old;
+
+    public Student(Integer id, int old) {
+        this.id = id;
+        this.old = old;
+    }
+}
+
+
+// 对于其他类型的可以使用AtomicRefrenceFieldUpdater
+```
+
+#### 2.7.5 ABA问题
+
+现象：
+
+A线程在修改一个变量的中间其他线程修改了该变量，但是值还是原来的值，A线程仍然无感知，直接修改
+
+如何解决：
+
+增加版本号，类似于数据库的丢失更新问题，atomic类已经有实现了对应的版本号的CAS
+
+> ```java
+> AtomicStampedReference stampedReference = new AtomicStampedReference(user,0);
+> ```
+
+#### 2.7.6 Unsafe魔术类，直接操作内存
+
+> 该类在sun.misc包下，拥有执行低级别不安全操作的API，可以直接访问系统内存资源，Unsafe是单里的，提供静态方法getUnsafe来获取一个Unsafe对象，只有引导类加载器才能调用getUnsafe方法
+
+```java
+Field f = Unsafe.class.getDeclaredField("theUnsafe");
+f.setAccessible(true);
+Unsafe unsafe = (Unsafe) f.get(null);
+
+long memoryAddress = unsafe.allocateMemory(8);
+System.out.println("memoryAddress = " + memoryAddress);
+// 写入内存
+unsafe.putAddress(memoryAddress, 12321312321L);
+
+long addressValue = unsafe.getAddress(memoryAddress);
+System.out.println("addressValue = " + addressValue);
+```
+
