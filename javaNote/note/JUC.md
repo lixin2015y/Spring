@@ -90,6 +90,31 @@ System.out.println(Thread.currentThread().getName() + ":over");
 + lock不会自动释放锁，synchronized会自动释放锁
 + lock可以让等待的线程相应终端，而synchronized不行，使用synchronized，线程会一直等待下去，不能沟进行中断
 
+#### 2.3 synchronized 关键字原理
+
++ synchronized在编译后会被翻译成mo'ni'torenter和monitorexit两条指令分别在代码块的起始和结束为止，
++ 在字节码中monitorexit会出现两次， 代表正常返回和异常处理返回
++ 当monitor为0的时候，线程会将monitor+1代表获取当前锁，
++ 当monitor不为0，判断获取锁的线程是否是当前线程，如果是则monitor+1否则阻塞当前线程
+
+> 阻塞当前线程会涉及到用户态到核心态的切换，会
+
+#### 2.4 synchronized锁升级过程
+
++ 四种状态，无锁，偏向锁，轻量级锁，重量级锁
++ 锁可以升级，不能降级，但是偏向锁状态可以被重置为无锁
+
+> 升级过程
+>
+> + 线程获取锁对象，如果是无锁状态，则使用CAS在对象中记录偏向的线程的threadid，
+> + 其他线程获取锁的时候，判断当前获取锁的线程是不是自己
+>   + 是自己，直接进入，无需使用CAS
+>   + 不是自己，判断当前获取锁的线程是否存活，若存活，则代表有锁的竞争，则升级为轻量级锁，若不存货，则使用CAS修改偏向线程ID
+> + 轻量级锁
+>   + 使用CAS+自旋不断重试获取锁，自旋次数过长后升级为重量级锁
+> + 重量级锁
+>   + 获取锁的线程会阻塞其他线程，依赖内部的monitor对象实现，monitor依赖底层的操作系统互斥量来实现，需要从用户态转化到核心态，成本非常高。
+
 ### 3. 线程间通信
 
 #### 3.1 虚假唤醒
@@ -432,7 +457,7 @@ public class ForkJoinDemo {
 + run CPU执行
 + terminate 终止
 + wait  join  等方法会让当前线程等待
-+ sleep(s)、wait(s)
++ sleep(s)、wait(s 
 
 ### 2.2 守护线程
 
