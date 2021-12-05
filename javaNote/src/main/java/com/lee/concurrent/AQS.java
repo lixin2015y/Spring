@@ -3,7 +3,7 @@ package com.lee.concurrent;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class AQS {
-    private static int count;
+    private static volatile int count;
     private static ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
