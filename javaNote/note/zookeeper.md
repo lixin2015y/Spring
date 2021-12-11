@@ -133,3 +133,25 @@ zookeeper会频繁进行IO操作，不断追加写磁盘会开辟新的磁盘块
 
 恢复数据的时候，可以先恢复快照数据，再通过增量恢复事务日志中的数据 即可
 
+### 1.8 zookeeper集群模式
+
+#### 1.8.1 集群中的三种角色
+
++ leader：处理写和读操作，集群中只有一个leader
++ follower：只处理读请求，leader宕机后，有机会被选举成为新的leader
++ Observer：只处理读请求，不参加选举
+
+<img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211101017748.png" alt="image-20211211101017748" style="zoom:67%;" />
+
+#### 1.8.2 分布式锁
+
++ **非公平锁**
+
+<img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211102645950.png" alt="image-20211211102645950" style="zoom:67%;" />
+
++ 公平锁
+
+<img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211102715286.png" alt="image-20211211102715286" style="zoom:80%;" />
+
+> 公平锁相对于非公平锁，使用了临时顺序节点，解决了同时多个节点并发竞争锁的问题，环节了服务器的压力
+
