@@ -149,9 +149,29 @@ zookeeper会频繁进行IO操作，不断追加写磁盘会开辟新的磁盘块
 
 <img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211102645950.png" alt="image-20211211102645950" style="zoom:67%;" />
 
-+ 公平锁
++ **公平锁**
 
 <img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211102715286.png" alt="image-20211211102715286" style="zoom:80%;" />
 
 > 公平锁相对于非公平锁，使用了临时顺序节点，解决了同时多个节点并发竞争锁的问题，环节了服务器的压力
+
++ **读写锁（共享锁）**
+
+读操作大多数情况下是不需要加锁的
+
+<img src="D:\project\Spring\javaNote\image\zookeeper\image-20211211110101812.png" alt="image-20211211110101812" style="zoom:80%;" />
+
+判断是否获取锁
+
+如果当前是写锁：
+
+​	获取lock下的所有子节点，判断当前顺序结点前是否还有其他节点，若有，注册一个对前一段锁的监听
+
+如果当前是读锁：
+
+​	获取lock下的所有子节点，判断当前顺序节点前是否还有其他写锁，若有，对当前节点前一个写锁进行监听，
+
+否则代表当前获取了锁
+
+
 
