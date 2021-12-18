@@ -1,9 +1,11 @@
 package com.lee.test;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.util.Arrays;
 
+@Slf4j
 public class Test1 {
 
     private int[] result;
@@ -53,5 +55,12 @@ public class Test1 {
         int[][] array = {{1, 2, 3}, {4, 5, 6,}, {7, 8, 9}};
         int[] ints = spiralOrder(array);
         System.out.println(Arrays.toString(ints));
+    }
+
+
+    @Test
+    public void test2(){
+        System.out.println("true = " + Boolean.toString(true));
+        log.info("P{}", true);
     }
 }
