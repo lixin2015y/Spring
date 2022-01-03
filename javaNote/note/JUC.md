@@ -607,3 +607,16 @@ long addressValue = unsafe.getAddress(memoryAddress);
 System.out.println("addressValue = " + addressValue);
 ```
 
+## 三、AQL的理解
+
+### 3.1 CLH队列中Node节点
+
++ pre：前驱节点
++ next：后继节点
++ thread：当前节点的线程
++ waitStatus（volatile修飾）:
+  + 默认0初始状态
+  + CANCELLED=1
+  + SIGNAL=-1
+  + CONDITION=-2
+  + PROPAGATE=-3
