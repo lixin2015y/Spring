@@ -607,16 +607,115 @@ long addressValue = unsafe.getAddress(memoryAddress);
 System.out.println("addressValue = " + addressValue);
 ```
 
-## 三、AQL的理解
+### 2.8 ReentrantLock源码
 
-### 3.1 CLH队列中Node节点
+**公平锁：**
 
-+ pre：前驱节点
-+ next：后继节点
-+ thread：当前节点的线程
-+ waitStatus（volatile修飾）:
-  + 默认0初始状态
-  + CANCELLED=1
-  + SIGNAL=-1
-  + CONDITION=-2
-  + PROPAGATE=-3
+```java
+// 该方法会竞争锁，如果竞争不到会将当前线程阻塞并且入队
+final void lock() {
+    acquire(1);
+}
+
+public final void acquire(int arg) {
+        if (!tryAcquire(arg) &&
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            selfInterrupt();
+    // tryAcquire(arg) 尝试获取锁，
+    // addWaiter(Node.EXCLUSIVE) 如果未获取锁，创建一个Node节点(当前线程，共享模式)入队，并返回入队的节点
+    //  acquireQueued(node).
+}
+
+
+// 尝试获取锁
+protected final boolean tryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                // 这里c==0表示当前锁没有人持有，
+                // 公平锁需要判断队列中是否有元素，如果有元素，则不能进行锁竞争
+                if (!hasQueuedPredecessors() &&
+                    compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                // 这里判断是不是锁重入，state不为0的时候如果当前独占锁的线程是自己，则可以重入
+                // 这里不会出现锁的竞争问题，
+                int nextc = c + acquires;
+                if (nextc < 0)
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+}
+
+// 获取锁失败的线程入队
+// 当前方法返回入队后的节点
+private Node addWaiter(Node mode) {
+    Node node = new Node(Thread.currentThread(), mode);
+    // Try the fast path of enq; backup to full enq on failure
+    Node pred = tail;
+    // 这里这个判断如果之前队列没有被初始化则不会执行
+    // TODO 是干嘛的呢？
+    if (pred != null) {
+        node.prev = pred;
+        if (compareAndSetTail(pred, node)) {
+            pred.next = node;
+            return node;
+        }
+    }
+    // 这里是创建队列并将当前的node放到队尾
+    enq(node);
+    return node;
+}
+
+// 如果队列没有被初始化，则创建一个空节点，头尾都指向ta，
+// 如果已经被初始化了，使用CAS来设置尾节点为当前节点，直到设置成功，
+    private Node enq(final Node node) {
+        for (;;) {
+            Node t = tail;
+            if (t == null) { // Must initialize
+                if (compareAndSetHead(new Node()))
+                    tail = head;
+            } else {
+                node.prev = t;
+                if (compareAndSetTail(t, node)) {
+                    t.next = node;
+                    return t;
+                }
+            }
+        }
+    }
+
+
+
+// 此方法在未获取到锁线程入队后执行，如果档期那线程的pre是头结点（dummy的）用于再次让这个线程获取锁，避免线程中断，
+    final boolean acquireQueued(final Node node, int arg) {
+        boolean failed = true; // 是否需要阻塞
+        try {
+            boolean interrupted = false;
+            for (;;) {
+                final Node p = node.predecessor();
+                if (p == head && tryAcquire(arg)) {
+                    // 这里非常重要！！！！
+                    // 如果当前节点头pre是头结点，再次尝试获取锁，如果获取到，说明头结点为虚拟节点或者
+                    // 头结点已经释放掉锁，咋将头结点指向当前节点
+                    setHead(node);
+                    p.next = null; // help GC
+                    failed = false;
+                    return interrupted;
+                }
+                if (shouldParkAfterFailedAcquire(p, node) &&
+                    parkAndCheckInterrupt())
+                    interrupted = true;
+            }
+        } finally {
+            if (failed)
+                cancelAcquire(node);
+        }
+    }
+
+```

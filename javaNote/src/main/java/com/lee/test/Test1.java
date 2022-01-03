@@ -1,9 +1,13 @@
 package com.lee.test;
 
+import com.sun.xml.internal.stream.util.ThreadLocalBufferAllocator;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.omg.CORBA.StringHolder;
 
 import java.util.Arrays;
 
+@Slf4j
 public class Test1 {
 
     private int[] result;
@@ -54,4 +58,59 @@ public class Test1 {
         int[] ints = spiralOrder(array);
         System.out.println(Arrays.toString(ints));
     }
+
+
+    @Test
+    public void test2(){
+        System.out.println("true = " + Boolean.toString(true));
+        log.info("P{}", true);
+    }
+
+    class A {
+        private String a;
+
+        public String getA() {
+            return a;
+        }
+
+        public void setA(String a) {
+            this.a = a;
+        }
+
+    }
+
+    class B extends A {
+
+        private String b;
+
+        public String getB() {
+            return b;
+        }
+
+        public void setB(String b) {
+            this.b = b;
+        }
+
+    }
+
+
+
+    ThreadLocal<A> objectThreadLocal = new ThreadLocal<>();
+    @Test
+    public void test3(){
+        B b = new B();
+        b.setB("b");
+        b.setA("a");
+        A a = new A();
+        a.setA("a");
+        objectThreadLocal.set(a);
+        String s = innerMethod();
+        System.out.println("s = " + s);
+    }
+
+    private String innerMethod() {
+        B bb = (B)objectThreadLocal.get();
+        return bb.toString();
+    }
+
 }
