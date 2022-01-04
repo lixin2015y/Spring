@@ -618,12 +618,12 @@ final void lock() {
 }
 
 public final void acquire(int arg) {
+    	// tryAcquire(arg) 尝试获取锁，如果拿到锁返回true这里不继续往下走
         if (!tryAcquire(arg) &&
+            // 这里是档期那线程未拿到锁，将当前线程封装成一个node节点入队
             acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            // 入队成功后，中断线程
             selfInterrupt();
-    // tryAcquire(arg) 尝试获取锁，
-    // addWaiter(Node.EXCLUSIVE) 如果未获取锁，创建一个Node节点(当前线程，共享模式)入队，并返回入队的节点
-    //  acquireQueued(node).
 }
 
 
