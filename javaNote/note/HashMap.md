@@ -111,6 +111,8 @@ static final int tableSizeFor(int cap) {
 
 ### 3.3 pur方法，hashCode和数组下标的计算
 
+#### 3.3.1 putVal()
+
 ```java
 // 調用putval之前会调用hash方法，
 public V put(K key, V value) {
@@ -176,26 +178,57 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
     // 维护size，如果大于
     if (++size > threshold)
         resize();
+    // 这里是给linkedHashmap插入元素后进行的回调
     afterNodeInsertion(evict);
     return null;
 }
 ```
 
+#### 3.4.2 如果链表长度大于8
+
+```java
+final void treeifyBin(Node<K,V>[] tab, int hash) {
+    int n, index; Node<K,V> e;
+    if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
+        // 如果数组长度还小于64呢，优先进行扩容，不转红黑树
+        resize();
+    else if ((e = tab[index = (n - 1) & hash]) != null) {
+        TreeNode<K,V> hd = null, tl = null;
+        do {
+            TreeNode<K,V> p = replacementTreeNode(e, null);
+            if (tl == null)
+                hd = p;
+            else {
+                p.prev = tl;
+                tl.next = p;
+            }
+            tl = p;
+        } while ((e = e.next) != null);
+        if ((tab[index] = hd) != null)
+            hd.treeify(tab);
+    }
+}
+```
+
+
+
 
 
 ### 3.4 扩容方法，兼容了初始化方法
 
-```
+```java
 final Node<K,V>[] resize() {
     Node<K,V>[] oldTab = table;
     int oldCap = (oldTab == null) ? 0 : oldTab.length;
     int oldThr = threshold;
     int newCap, newThr = 0;
     if (oldCap > 0) {
+    	// 之前未进行初始化过，在此处扩容
         if (oldCap >= MAXIMUM_CAPACITY) {
             threshold = Integer.MAX_VALUE;
             return oldTab;
         }
+        // 扩容两倍
         else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
                  oldCap >= DEFAULT_INITIAL_CAPACITY)
             newThr = oldThr << 1; // double threshold
@@ -215,21 +248,30 @@ final Node<K,V>[] resize() {
     @SuppressWarnings({"rawtypes","unchecked"})
     Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
     table = newTab;
+    // 老数组原来有值， 需要进行节点迁移
     if (oldTab != null) {
         for (int j = 0; j < oldCap; ++j) {
             Node<K,V> e;
+            // 遍历所有的桶，如果当前桶不为空
             if ((e = oldTab[j]) != null) {
                 oldTab[j] = null;
                 if (e.next == null)
+                    // 当前桶只有一个节点
+                	// 直接计算数组下标
                     newTab[e.hash & (newCap - 1)] = e;
                 else if (e instanceof TreeNode)
+                    // 如果当前桶是红黑树
+                    // 
                     ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                 else { // preserve order
+                    // 当前节点是链表，
                     Node<K,V> loHead = null, loTail = null;
                     Node<K,V> hiHead = null, hiTail = null;
                     Node<K,V> next;
                     do {
                         next = e.next;
+                        // 这里使用hash值与cap进行与运算
+                        // 将此链表上的数据分成两份，
                         if ((e.hash & oldCap) == 0) {
                             if (loTail == null)
                                 loHead = e;
@@ -247,10 +289,12 @@ final Node<K,V>[] resize() {
                     } while ((e = next) != null);
                     if (loTail != null) {
                         loTail.next = null;
+                        // 高位为0的直接放到对应的index下面
                         newTab[j] = loHead;
                     }
                     if (hiTail != null) {
                         hiTail.next = null;
+                        // 高位为1的放到index+cap下面
                         newTab[j + oldCap] = hiHead;
                     }
                 }
@@ -262,6 +306,23 @@ final Node<K,V>[] resize() {
 ```
 
 ### 3.5 插入红黑树方法
+
++ 红黑树结构定义
+
+```java
+static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
+    TreeNode<K,V> parent;  // red-black tree links
+    TreeNode<K,V> left;
+    TreeNode<K,V> right;
+    TreeNode<K,V> prev;    // needed to unlink next upon deletion
+    boolean red;
+    TreeNode(int hash, K key, V val, Node<K,V> next) {
+        super(hash, key, val, next);
+    }
+}
+```
+
++ 插入红黑树节点
 
 ```java
 final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
@@ -308,5 +369,116 @@ final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
             return null;
         }
     }
+}
+```
+
+
+
+### 3.6 扩容时处理treeNode，有可能将红黑树转为链表
+
+```java
+final void split(HashMap<K,V> map, Node<K,V>[] tab, int index, int bit) {
+    TreeNode<K,V> b = this;
+    // Relink into lo and hi lists, preserving order
+    TreeNode<K,V> loHead = null, loTail = null;
+    TreeNode<K,V> hiHead = null, hiTail = null;
+    int lc = 0, hc = 0;
+    for (TreeNode<K,V> e = b, next; e != null; e = next) {
+        next = (TreeNode<K,V>)e.next;
+        e.next = null;
+        if ((e.hash & bit) == 0) {
+            if ((e.prev = loTail) == null)
+                loHead = e;
+            else
+                loTail.next = e;
+            loTail = e;
+            ++lc;
+        }
+        else {
+            if ((e.prev = hiTail) == null)
+                hiHead = e;
+            else
+                hiTail.next = e;
+            hiTail = e;
+            ++hc;
+        }
+    }
+
+    if (loHead != null) {
+        // 在这里判断链表长度小于6，分解红黑树
+        if (lc <= UNTREEIFY_THRESHOLD)
+            tab[index] = loHead.untreeify(map);
+        else {
+            tab[index] = loHead;
+            if (hiHead != null) // (else is already treeified)
+                loHead.treeify(tab);
+        }
+    }
+    if (hiHead != null) {
+        if (hc <= UNTREEIFY_THRESHOLD)
+            tab[index + bit] = hiHead.untreeify(map);
+        else {
+            tab[index + bit] = hiHead;
+            if (loHead != null)
+                hiHead.treeify(tab);
+        }
+    }
+}
+```
+
+### 3.7 remove方法
+
+```java
+public V remove(Object key) {
+    Node<K,V> e;
+    return (e = removeNode(hash(key), key, null, false, true)) == null ?
+        null : e.value;
+}
+```
+
+```java
+final Node<K,V> removeNode(int hash, Object key, Object value,
+                           boolean matchValue, boolean movable) {
+    Node<K,V>[] tab; Node<K,V> p; int n, index;
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (p = tab[index = (n - 1) & hash]) != null) {
+        Node<K,V> node = null, e; K k; V v;
+        if (p.hash == hash &&
+            ((k = p.key) == key || (key != null && key.equals(k))))
+            // 使用hashCode计算出来的桶的元素就是这个元素
+            node = p;
+        else if ((e = p.next) != null) {
+            if (p instanceof TreeNode)
+                // 如果是红黑树，就从红黑树里面找
+                node = ((TreeNode<K,V>)p).getTreeNode(hash, key);
+            else {
+                // 从链表里面找
+                do {
+                    if (e.hash == hash &&
+                        ((k = e.key) == key ||
+                         (key != null && key.equals(k)))) {
+                        node = e;
+                        break;
+                    }
+                    p = e;
+                } while ((e = e.next) != null);
+            }
+        }
+        if (node != null && (!matchValue || (v = node.value) == value ||
+                             (value != null && value.equals(v)))) {
+            if (node instanceof TreeNode)
+                // 在此方法内会判断当前树的左右子节点或者左子节点的子节点为空则分解红黑树
+                ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
+            else if (node == p)
+                tab[index] = node.next;
+            else
+                p.next = node.next;
+            ++modCount;
+            --size;
+            afterNodeRemoval(node);
+            return node;
+        }
+    }
+    return null;
 }
 ```
