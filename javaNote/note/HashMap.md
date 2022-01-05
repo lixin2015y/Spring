@@ -54,3 +54,56 @@
 + get方法
     + 如果列表为空直接返回空，不是空则判断桶的第一个元素是不是要找的
     + 如果不是判断是树还是链表，在相应的数据结构中获取
+
+## 源码分析
+
+### 3.1 构造方法 new HashMap(16)
+
+```java
+public HashMap(int initialCapacity, float loadFactor) {
+    // 构造方法一般使用capacity一个参数的，使用默认加载因子，
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal initial capacity: " +
+                                           initialCapacity);
+    if (initialCapacity > MAXIMUM_CAPACITY)
+        initialCapacity = MAXIMUM_CAPACITY;
+    if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal load factor: " +
+                                           loadFactor);
+    this.loadFactor = loadFactor;
+    // 在这里初始化数组数组，数组计算过程
+    this.threshold = tableSizeFor(initialCapacity);
+}
+```
+
+### 3.2 数组size计算过程
+
+```java
+// 通过位运算来进行数组大小的计算
+static final int tableSizeFor(int cap) {
+    // 这里减一的目的是为了防止当前入参就是一个2的n次幂数
+    int n = cap - 1;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    // 通过移位运算后，n由00000000 00000000 00000000 00010001变成了
+    // 00000000 00000000 00000000 00011111 这种，这个数只比目标数小1
+  	// 如果最终结果不大于最大值，直接返回n+1即可
+    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+
+// java1.7调用的是Integer类的higestOneBit(cap)
+// 入参传递  cap < 1 - 1 乘2减1 为了避免当前传递的就是一个2的n次幂数
+    int n = cap;
+	n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+	return n - n >>> 1;
+```
+
+### 3.3 hashCode和数组下标的计算
+
