@@ -1,3 +1,7 @@
+
+
+
+
 # HashMap1.7
 
 #### 使用大于capicaty的2的次方数进行初始化（用于计算数组下标）
@@ -105,5 +109,204 @@ static final int tableSizeFor(int cap) {
 	return n - n >>> 1;
 ```
 
-### 3.3 hashCode和数组下标的计算
+### 3.3 pur方法，hashCode和数组下标的计算
 
+```java
+// 調用putval之前会调用hash方法，
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+// 这里将高位与地位进行异或运算，为了防止数组长度比较小，高位的hash无法参与到数组下标的计算
+static final int hash(Object key) {
+        int h;
+        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+    }
+```
+
+```java
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+       	// 这里对数组进行了初始化，调用空构造方法的时候，只是制定了加载因子，未进行初始化
+        n = (tab = resize()).length;
+    // 这里使用hash值与数组size-1进行与运算计算下标
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        // 这个桶里面没有元素，直接创建一个node，放进去
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        // 已经有元素，代表出现了hash冲突
+        Node<K,V> e; K k;
+        if (p.hash == hash &&
+            ((k = p.key) == key || (key != null && key.equals(k))))
+            // 这里先比对hash值，在比对key值
+            e = p;
+        else if (p instanceof TreeNode)
+            // 如果顶层节点是红黑树类型，则调用红黑树插入
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {
+            // 不是红黑树，说明还是链表
+            for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+                    // 如果下一个是null，则可以直接插入，因为首个元素在前面已经判断过了
+                    p.next = newNode(hash, key, value, null);
+                    // 当前循环走完binCount才会++，也就是说，只有原有的元素>=8的时候
+                    // 或者插入新元素完后，链表长度>8才转化为红黑树
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                // 如果当前元素
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        // 这里如果是已经存在的key，需要将原来的值返回
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            return oldValue;
+        }
+    }
+    ++modCount;
+    // 维护size，如果大于
+    if (++size > threshold)
+        resize();
+    afterNodeInsertion(evict);
+    return null;
+}
+```
+
+
+
+### 3.4 扩容方法，兼容了初始化方法
+
+```
+final Node<K,V>[] resize() {
+    Node<K,V>[] oldTab = table;
+    int oldCap = (oldTab == null) ? 0 : oldTab.length;
+    int oldThr = threshold;
+    int newCap, newThr = 0;
+    if (oldCap > 0) {
+        if (oldCap >= MAXIMUM_CAPACITY) {
+            threshold = Integer.MAX_VALUE;
+            return oldTab;
+        }
+        else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
+                 oldCap >= DEFAULT_INITIAL_CAPACITY)
+            newThr = oldThr << 1; // double threshold
+    }
+    else if (oldThr > 0) // initial capacity was placed in threshold
+        newCap = oldThr;
+    else {               // zero initial threshold signifies using defaults
+        newCap = DEFAULT_INITIAL_CAPACITY;
+        newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+    }
+    if (newThr == 0) {
+        float ft = (float)newCap * loadFactor;
+        newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                  (int)ft : Integer.MAX_VALUE);
+    }
+    threshold = newThr;
+    @SuppressWarnings({"rawtypes","unchecked"})
+    Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+    table = newTab;
+    if (oldTab != null) {
+        for (int j = 0; j < oldCap; ++j) {
+            Node<K,V> e;
+            if ((e = oldTab[j]) != null) {
+                oldTab[j] = null;
+                if (e.next == null)
+                    newTab[e.hash & (newCap - 1)] = e;
+                else if (e instanceof TreeNode)
+                    ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                else { // preserve order
+                    Node<K,V> loHead = null, loTail = null;
+                    Node<K,V> hiHead = null, hiTail = null;
+                    Node<K,V> next;
+                    do {
+                        next = e.next;
+                        if ((e.hash & oldCap) == 0) {
+                            if (loTail == null)
+                                loHead = e;
+                            else
+                                loTail.next = e;
+                            loTail = e;
+                        }
+                        else {
+                            if (hiTail == null)
+                                hiHead = e;
+                            else
+                                hiTail.next = e;
+                            hiTail = e;
+                        }
+                    } while ((e = next) != null);
+                    if (loTail != null) {
+                        loTail.next = null;
+                        newTab[j] = loHead;
+                    }
+                    if (hiTail != null) {
+                        hiTail.next = null;
+                        newTab[j + oldCap] = hiHead;
+                    }
+                }
+            }
+        }
+    }
+    return newTab;
+}
+```
+
+### 3.5 插入红黑树方法
+
+```java
+final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
+                               int h, K k, V v) {
+    Class<?> kc = null;
+    boolean searched = false;
+    TreeNode<K,V> root = (parent != null) ? root() : this;
+    for (TreeNode<K,V> p = root;;) {
+        int dir, ph; K pk;
+        if ((ph = p.hash) > h)
+            dir = -1;
+        else if (ph < h)
+            dir = 1;
+        else if ((pk = p.key) == k || (k != null && k.equals(pk)))
+            return p;
+        else if ((kc == null &&
+                  (kc = comparableClassFor(k)) == null) ||
+                 (dir = compareComparables(kc, k, pk)) == 0) {
+            if (!searched) {
+                TreeNode<K,V> q, ch;
+                searched = true;
+                if (((ch = p.left) != null &&
+                     (q = ch.find(h, k, kc)) != null) ||
+                    ((ch = p.right) != null &&
+                     (q = ch.find(h, k, kc)) != null))
+                    return q;
+            }
+            dir = tieBreakOrder(k, pk);
+        }
+
+        TreeNode<K,V> xp = p;
+        if ((p = (dir <= 0) ? p.left : p.right) == null) {
+            Node<K,V> xpn = xp.next;
+            TreeNode<K,V> x = map.newTreeNode(h, k, v, xpn);
+            if (dir <= 0)
+                xp.left = x;
+            else
+                xp.right = x;
+            xp.next = x;
+            x.parent = x.prev = xp;
+            if (xpn != null)
+                ((TreeNode<K,V>)xpn).prev = x;
+            moveRootToFront(tab, balanceInsertion(root, x));
+            return null;
+        }
+    }
+}
+```
