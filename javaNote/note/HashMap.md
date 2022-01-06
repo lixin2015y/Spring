@@ -39,7 +39,8 @@
 
 
 
-# 1.8
+# HashMap源码分析
+
 + 数据结构：数组+链表+红黑树
 + 红黑树的性质
     + 节点是红色或黑色
@@ -310,3 +311,133 @@ final TreeNode<K,V> putTreeVal(HashMap<K,V> map, Node<K,V>[] tab,
     }
 }
 ```
+
+# ConcurrentHashMap源码分析
+
+## 源码分析
+
+> 怎么触发的扩容
+
++ sizeCtl：
+  + -1：正在初始化
+  + 0：未初始化
+  + 小于-1：正在扩容
+  + 大于0：已经初始化，map当前最大盛放的元素
++ 
+
+### 4.1 put()方法
+
+```java
+final V putVal(K key, V value, boolean onlyIfAbsent) {
+    if (key == null || value == null) throw new NullPointerException();
+    // 计算hash值
+    int hash = spread(key.hashCode());
+    int binCount = 0;
+    // 这里使用for循环让并发抢不到锁的线程可以自旋插入
+    for (Node<K,V>[] tab = table;;) {
+        Node<K,V> f; int n, i, fh;
+        // 如果还没有初始化，则进行初始化
+        if (tab == null || (n = tab.length) == 0)
+            tab = initTable();
+        else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
+            // 这个桶为空，使用CAS来创建抢node节点
+            if (casTabAt(tab, i, null,
+                         new Node<K,V>(hash, key, value, null)))
+                break;                   // no lock when adding to empty bin
+        }
+        else if ((fh = f.hash) == MOVED)
+            // 如果正在扩容，需要帮助扩容
+            tab = helpTransfer(tab, f);
+        else {
+            V oldVal = null;
+            // 锁住头结点
+            synchronized (f) {
+                if (tabAt(tab, i) == f) {
+                    if (fh >= 0) {
+                        binCount = 1;
+                        // 循环判断，这里类似于hashmap
+                        for (Node<K,V> e = f;; ++binCount) {
+                            K ek;
+                            if (e.hash == hash &&
+                                ((ek = e.key) == key ||
+                                 (ek != null && key.equals(ek)))) {
+                                oldVal = e.val;
+                                if (!onlyIfAbsent)
+                                    e.val = value;
+                                break;
+                            }
+                            Node<K,V> pred = e;
+                            if ((e = e.next) == null) {
+                                pred.next = new Node<K,V>(hash, key,
+                                                          value, null);
+                                break;
+                            }
+                        }
+                    }
+                    else if (f instanceof TreeBin) {
+                        Node<K,V> p;
+                        binCount = 2;
+                        // 红黑树超如，类似于hashmap
+                        if ((p = ((TreeBin<K,V>)f).putTreeVal(hash, key,
+                                                       value)) != null) {
+                            oldVal = p.val;
+                            if (!onlyIfAbsent)
+                                p.val = value;
+                        }
+                    }
+                }
+            }
+            if (binCount != 0) {
+                if (binCount >= TREEIFY_THRESHOLD)
+                    // 链表长度大于8尝试转化红黑树
+                    treeifyBin(tab, i);
+                if (oldVal != null)
+                    return oldVal;
+                break;
+            }
+        }
+    }
+    addCount(1L, binCount);
+    return null;
+}
+```
+
+### 4.2 initTable()方法
+
+```java
+private final Node<K,V>[] initTable() {
+    Node<K,V>[] tab; int sc;
+    // 由于可能多个线程来访问，使用while循环
+    while ((tab = table) == null || tab.length == 0) {
+        if ((sc = sizeCtl) < 0)
+            // 这里代表其他线程已经抢到了扩容锁，这里直接yield让出cpu
+            Thread.yield(); // lost initialization race; just spin
+        else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+            // 这里使用CAS抢锁成功
+            try {
+                if ((tab = table) == null || tab.length == 0) {
+                    int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
+                    @SuppressWarnings("unchecked")
+                    Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];
+                    table = tab = nt;
+                    sc = n - (n >>> 2);
+                }
+            } finally {
+                sizeCtl = sc;
+            }
+            break;
+        }
+    }
+    return tab;
+}
+```
+
+### 4.3 helpTransfer(tab, f)帮助扩容方法
+
+
+
+### 4.4 treeifyBin(tab, i) 尝试转化为红黑树
+
+如果数组长度小于64，则进行优先扩容
+
+### 
