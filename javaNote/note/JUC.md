@@ -471,7 +471,7 @@ public class ForkJoinDemo {
 + wait 当前线程进入wait状态，等待被唤醒
 + notify 唤醒当前wait状态的线程
 
-### 2.4 synconized
+### 2.4 synchronized
 
 锁升级过程
 
