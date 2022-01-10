@@ -7,8 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class IOCTest {
     @Test
     public void test() {
-        final ApplicationContext context
-                = new AnnotationConfigApplicationContext(IOCConfig.class);
+        final ApplicationContext context = new AnnotationConfigApplicationContext(IOCConfig.class);
     }
 
 }
