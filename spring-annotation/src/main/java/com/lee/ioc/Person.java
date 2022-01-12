@@ -50,5 +50,11 @@ public class Person implements InitializingBean, DisposableBean {
         System.out.println("person实现接口的destroy方法");
     }
 
-
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", car=" + car +
+                '}';
+    }
 }

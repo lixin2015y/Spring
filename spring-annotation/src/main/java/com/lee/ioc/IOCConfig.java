@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Import;
 public class IOCConfig {
 
     @Bean
-    Person person(@Autowired Car car) {
-        return new Person("lixin", car);
+    Person person() {
+        return new Person("lixin", car());
     }
 
     @Bean
