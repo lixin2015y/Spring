@@ -244,6 +244,36 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
    private final Map<String, Set<String>> dependenciesForBeanMap = new ConcurrentHashMap<>(64);
 ```
 
+
+
+
+
+### 2.2 流程图
+
+![image-20220114212031256](../image/image-20220114212031256.png)
+
+### 2.3  为什么要用二级缓存？
+
+解决循环依赖问题，会有不完整的bean，分离不完整的和完整的bean
+
+### 2.4 为什么要用三级缓存？
+
++ 正常bean创建代理对象是初始化后进行的，如果循环依赖中需要的是代理对象，则需要提前执行(实例化后)AOP创建。
+
++ 三级缓存在这里提到了一定程度的延迟加载的过程，并且保证了创建代理对象还是由beanPostPorcessor来完成，解耦
+
++ 三级缓存到二级缓存的过程有B对象初始化后属性赋值时触发，也就是说只有循环依赖才会触发，如果没有三级缓存则所有的bean都会尝试创建代理
+
+### 2.5 三级缓存中，二级缓存的意义？
+
+防止三级缓存重复执行
+
+### 2.6 怎么判断是不是循环依赖？
+
+创建本身的时候没法判断自己是不是循环依赖，， 只有在B 引用A （不同bean的引用直接）下才能判断是不是循环依赖（比如B引用A,A正在创建，那说明是循环依赖），  所以判断要卸载getSingleton中。   
+
+
+
 ## 三、beanPostProcessor执行时机
 
 ### 3.1 在创建bean之前调用，调用doCreateBean之前
