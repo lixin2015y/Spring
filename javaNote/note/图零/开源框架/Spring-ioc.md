@@ -112,3 +112,195 @@ synchronized (this.startupShutdownMonitor) {
    }
 }
 ```
+
+
+
+## 二、解决循环依赖问题
+
+### 2.1 整体梳理
+
+```java
+protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
+      @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
+
+   final String beanName = transformedBeanName(name);
+   Object bean;
+
+   // 调用doGetBean这里可以先从一级缓存中拿，每次调用getBean都会先从单例池中获取
+   Object sharedInstance = getSingleton(beanName);
+   if (sharedInstance != null && args == null) {
+      bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+   } else {
+       // 一级缓存中没有，说明是还没有创建
+	  	sharedInstance = getSingleton(beanName, () -> {
+            try {
+                return createBean(beanName, mbd, args);
+            }
+            catch (BeansException ex) {
+                destroySingleton(beanName);
+                throw ex;
+            }
+        });
+       bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
+   } 
+   return (T) bean;
+}
+```
+
+
+
+```java
+public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+   Assert.notNull(beanName, "Bean name must not be null");
+    // 在这里加锁，防止多线程创建和访问bean
+   synchronized (this.singletonObjects) {
+      // 拿到锁后再进行判断一下，
+      Object singletonObject = this.singletonObjects.get(beanName);
+      if (singletonObject == null) {
+         // 开始创建，将bean标记为创建中，singletonsCurrentlyInCreation这个类里面
+         beforeSingletonCreation(beanName);
+         boolean newSingleton = false;
+         boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
+         if (recordSuppressedExceptions) {
+            this.suppressedExceptions = new LinkedHashSet<>();
+         }
+         try {
+            singletonObject = singletonFactory.getObject();
+            newSingleton = true;
+         }
+         catch (IllegalStateException ex) {
+            // Has the singleton object implicitly appeared in the meantime ->
+            // if yes, proceed with it since the exception indicates that state.
+            singletonObject = this.singletonObjects.get(beanName);
+            if (singletonObject == null) {
+               throw ex;
+            }
+         }
+         catch (BeanCreationException ex) {
+            if (recordSuppressedExceptions) {
+               for (Exception suppressedException : this.suppressedExceptions) {
+                  ex.addRelatedCause(suppressedException);
+               }
+            }
+            throw ex;
+         }
+         finally {
+            if (recordSuppressedExceptions) {
+               this.suppressedExceptions = null;
+            }
+            afterSingletonCreation(beanName);
+         }
+         if (newSingleton) {
+            addSingleton(beanName, singletonObject);
+         }
+      }
+      return singletonObject;
+   }
+```
+
+```java
+public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
+
+  
+
+
+   /** Cache of singleton objects: bean name to bean instance. */
+   private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+
+   /** Cache of singleton factories: bean name to ObjectFactory. */
+   private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
+
+   /** Cache of early singleton objects: bean name to bean instance. */
+   private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
+
+   /** Set of registered singletons, containing the bean names in registration order. */
+   private final Set<String> registeredSingletons = new LinkedHashSet<>(256);
+
+   /** Names of beans that are currently in creation. */
+   private final Set<String> singletonsCurrentlyInCreation =
+         Collections.newSetFromMap(new ConcurrentHashMap<>(16));
+
+   /** Names of beans currently excluded from in creation checks. */
+   private final Set<String> inCreationCheckExclusions =
+         Collections.newSetFromMap(new ConcurrentHashMap<>(16));
+
+   /** Collection of suppressed Exceptions, available for associating related causes. */
+   @Nullable
+   private Set<Exception> suppressedExceptions;
+
+   /** Flag that indicates whether we're currently within destroySingletons. */
+   private boolean singletonsCurrentlyInDestruction = false;
+
+   /** Disposable bean instances: bean name to disposable instance. */
+   private final Map<String, Object> disposableBeans = new LinkedHashMap<>();
+
+   /** Map between containing bean names: bean name to Set of bean names that the bean contains. */
+   private final Map<String, Set<String>> containedBeanMap = new ConcurrentHashMap<>(16);
+
+   /** Map between dependent bean names: bean name to Set of dependent bean names. */
+   private final Map<String, Set<String>> dependentBeanMap = new ConcurrentHashMap<>(64);
+
+   /** Map between depending bean names: bean name to Set of bean names for the bean's dependencies. */
+   private final Map<String, Set<String>> dependenciesForBeanMap = new ConcurrentHashMap<>(64);
+```
+
+## 三、beanPostProcessor执行时机
+
+### 3.1 在创建bean之前调用，调用doCreateBean之前
+
+```
+try {
+   // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+   Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+   if (bean != null) {
+      return bean;
+   }
+}
+
+try {
+   Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+   if (logger.isTraceEnabled()) {
+      logger.trace("Finished creating instance of bean '" + beanName + "'");
+   }
+   return beanInstance;
+}
+
+
+
+if (bp instanceof InstantiationAwareBeanPostProcessor) {
+				InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+				Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
+				if (result != null) {
+					return result;
+				}
+}
+
+```
+
+### 3.2 实例化之后，允许beanPostProcessor修改bean定义
+
+```java
+// Allow post-processors to modify the merged bean definition.
+synchronized (mbd.postProcessingLock) {
+   if (!mbd.postProcessed) {
+      try {
+         applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+      }
+      catch (Throwable ex) {
+         throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+               "Post-processing of merged bean definition failed", ex);
+      }
+      mbd.postProcessed = true;
+   }
+}
+
+protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
+		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+			if (bp instanceof MergedBeanDefinitionPostProcessor) {
+				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
+				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
+			}
+		}
+	}
+```
+
