@@ -6,7 +6,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -82,4 +84,9 @@ public class Problem1 extends BaseTestApplication {
         endTime = System.currentTimeMillis();
         System.out.println(String.format("方法执行耗时，%d秒", (endTime - startTime)));
     }
+
+    public static void main(String[] args) {
+        Deque a = new LinkedList();
+    }
+
 }

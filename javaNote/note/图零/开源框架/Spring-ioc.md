@@ -72,13 +72,16 @@ synchronized (this.startupShutdownMonitor) {
       postProcessBeanFactory(beanFactory);
 
       // 调用beanFactory的后置处理器，AnnotationConfigApplicationContext在这里面扫描并注册bean定义信息
+       // 先调用BeanDefinitionRegistryPostProcessors（PriorityOrdered、Ordered、no further）
+       // 再调用BeanFactoryPostProcessors（PriorityOrdered、Ordered、no further）
       invokeBeanFactoryPostProcessors(beanFactory);
 
       // 注册bean的后置处理器，因为在上一步已经将所有的bean定义注册进来
-      // 在这个时候我们可以拿到所有的BeanPostProcessor
+      // 在这个时候我们可以拿到所有的BeanPostProcessor，然后注入到beanFactory中
+      // 注册顺序（PriorityOrdered、Ordered、no further）
       registerBeanPostProcessors(beanFactory);
 
-      // 初始化MessageSource
+      // 初始化MessageSource，这里暂时不知道什么实用
       initMessageSource();
 
       // 初始化时间多播器
@@ -303,4 +306,19 @@ protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, C
 		}
 	}
 ```
+
+## 四、bean的声明周期
+
+1. 实例化Bean对象，这个时候Bean的对象是非常低级的，基本不能够被我们使用，因为连最基本的属性都没有设置，可以理解为连Autowired注解都是没有解析的；
+2. 填充属性，当做完这一步，Bean对象基本是完整的了，可以理解为Autowired注解已经解析完毕，依赖注入完成了；
+3. 如果Bean实现了BeanNameAware接口，则调用setBeanName方法；
+4. 如果Bean实现了BeanClassLoaderAware接口，则调用setBeanClassLoader方法；
+5. 如果Bean实现了BeanFactoryAware接口，则调用setBeanFactory方法；
+6. 调用BeanPostProcessor的postProcessBeforeInitialization方法；
+7. 如果Bean实现了InitializingBean接口，调用afterPropertiesSet方法；
+8. 如果Bean定义了init-method方法，则调用Bean的init-method方法；
+9. 调用BeanPostProcessor的postProcessAfterInitialization方法；当进行到这一步，Bean已经被准备就绪了，一直停留在应用的上下文中，直到被销毁；
+10. 如果应用的上下文被销毁了，如果Bean实现了DisposableBean接口，则调用destroy方法，如果Bean定义了destory-method声明了销毁方法也会被调用。
+
+## 五、AOP实现
 
