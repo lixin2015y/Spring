@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 public class MyDestructionAwareBeanPostprocessor implements DestructionAwareBeanPostProcessor {
     @Override
     public boolean requiresDestruction(Object bean) {
-        System.out.println("调用DestructionAwareBeanPostProcessor的requiresDestruction方法");
+        System.out.println("调用DestructionAwareBeanPostProcessor的requiresDestruction方法" + bean.toString());
         return false;
     }
 
     @Override
     public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-
+        System.out.println("调用DestructionAwareBeanPostProcessor的postProcessBeforeDestruction方法" + beanName);
     }
 }

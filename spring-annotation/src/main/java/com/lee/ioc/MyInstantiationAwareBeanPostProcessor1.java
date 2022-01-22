@@ -11,12 +11,12 @@ import java.beans.PropertyDescriptor;
 public class MyInstantiationAwareBeanPostProcessor1 implements InstantiationAwareBeanPostProcessor {
 
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        System.out.println("调用InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation");
+        System.out.println("调用InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation" + beanName);
         return null;
     }
 
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        System.out.println("调用InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation");
+        System.out.println("调用InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation" + beanName);
         return false;
     }
 
