@@ -25,4 +25,6 @@ public class MyInstantiationAwareBeanPostProcessor1 implements InstantiationAwar
         System.out.println("调用InstantiationAwareBeanPostProcessor的postProcessPropertyValues方法");
         return pvs;
     }
+
+
 }
