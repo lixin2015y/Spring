@@ -8,8 +8,8 @@ public class IOCTest {
     @Test
     public void test() {
         final ApplicationContext context = new AnnotationConfigApplicationContext(IOCConfig.class);
-        Person person = context.getBean(Person.class);
-        System.out.println(person);
+        Car car = context.getBean("car", Car.class);
+        System.out.println(car.toString());
     }
 
 }

@@ -14,12 +14,17 @@ public class IOCConfig {
 
     @Bean
     Person person() {
-        return new Person("lixin", car());
+        return new Person("lixin", new Car("1"));
     }
 
-    @Bean
+    @Bean(name = "car")
     Car car() {
         return new Car("宾利");
+    }
+
+    @Bean(name = "car")
+    Car car2() {
+        return new Car("111");
     }
 
 }
