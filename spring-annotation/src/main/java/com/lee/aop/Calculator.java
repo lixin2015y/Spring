@@ -1,12 +1,14 @@
 package com.lee.aop;
 
-import org.springframework.stereotype.Service;
+import java.util.PriorityQueue;
 
-@Service
-public class Calculator {
+/**
+ * @className: Caculator
+ * @author: li xin
+ * @date: 2022-03-22
+ **/
+public interface Calculator {
+    int div(int i, int j);
 
-    public int div(int i, int j) {
-        return i / j;
-    }
-
+    int add(int i, int j);
 }

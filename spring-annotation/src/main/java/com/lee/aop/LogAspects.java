@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class LogAspects {
 
 
-    @Pointcut("execution(* com.lee.aop.Calculator.*(..))")
+    @Pointcut("execution(* com.lee.aop.CalculatorImpl.*(..))")
     public void pointCut() {
     }
 

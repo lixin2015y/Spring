@@ -9,7 +9,8 @@ public class AOPTest {
     @Test
     public void test() {
         final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MainConfigOfAOP.class);
-        final Calculator calculator = context.getBean(Calculator.class);
+        Calculator calculator = context.getBean("proxyFactoryBean", Calculator.class);
         calculator.div(1, 2);
+        calculator.add(2, 3);
     }
 }
