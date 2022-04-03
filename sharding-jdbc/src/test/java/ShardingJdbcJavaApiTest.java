@@ -1,5 +1,3 @@
-package com.lee;
-
 import com.alibaba.druid.pool.DruidDataSource;
 import org.apache.shardingsphere.api.config.sharding.KeyGeneratorConfiguration;
 import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
