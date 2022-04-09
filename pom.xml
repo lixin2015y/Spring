@@ -21,6 +21,7 @@
         <module>elasticsearch</module>
         <module>rabbitmq</module>
         <module>sharding-jdbc</module>
+        <module>netty</module>
     </modules>
 
     <properties>
