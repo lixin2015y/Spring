@@ -54,7 +54,7 @@ public class ReactorMultiThread {
             try {
                 socketChannel = serverSocketChannel.accept();
                 if (socketChannel != null) {
-                    new MultiThreadEchoHandler(selectors[1], channel);
+//                    new MultiThreadEchoHandler(selectors[1], channel);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
