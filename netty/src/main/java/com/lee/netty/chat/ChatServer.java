@@ -39,5 +39,6 @@ public class ChatServer {
         }finally {
             bossGroup.shutdownGracefully();
             workGroup.shutdownGracefully();
-        }    }
+        }
+    }
 }
