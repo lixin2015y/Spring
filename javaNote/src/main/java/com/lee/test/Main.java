@@ -3,7 +3,11 @@ package com.lee.test;
 import org.junit.Test;
 
 import java.sql.SQLOutput;
+import java.sql.Time;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Main {
     public static void main(String[] args) {
@@ -60,5 +64,15 @@ public class Main {
             System.out.println(x + "," + y);
         }
 
+    }
+
+    @Test
+    public void test3() throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.execute(() -> {
+                int a = 1 / 0;
+        });
+        System.out.println("1");
+        Thread.sleep(1000000000);
     }
 }
