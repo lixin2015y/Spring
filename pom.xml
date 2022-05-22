@@ -22,6 +22,7 @@
         <module>rabbitmq</module>
         <module>sharding-jdbc</module>
         <module>netty</module>
+        <module>api</module>
     </modules>
 
     <properties>
