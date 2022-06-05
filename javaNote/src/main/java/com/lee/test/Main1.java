@@ -40,4 +40,17 @@ public class Main1 {
     public void test(){
         System.out.println('s' - 'a');
     }
+
+    @Test
+    public void test3(){
+        int[][] ints = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}};
+        for (int[] anInt : ints) {
+            for (int i : anInt) {
+                System.out.print(i + " ");
+            }
+            System.out.print("\n");
+        }
+        System.out.println(ints[0][1]);
+        System.out.println(ints[1][0]);
+    }
 }
