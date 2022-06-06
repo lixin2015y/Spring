@@ -1,9 +1,5 @@
 package com.lee.algorithm.problem;
 
-import com.lee.algorithm.utils.ArrayUtils;
-import com.sun.org.apache.regexp.internal.RE;
-
-import javax.swing.*;
 import java.util.Arrays;
 
 /**

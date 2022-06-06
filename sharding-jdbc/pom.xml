@@ -83,7 +83,6 @@
         <elasticsearch>6.2.2</elasticsearch>
         <springdata.commons>2.1.10.RELEASE</springdata.commons>
         <spring-data-elasticsearch.version>3.1.10.RELEASE</spring-data-elasticsearch.version>
-        <!--        <druid-datasource-version>1.1.22</druid-datasource-version>-->
         <druid-datasource-version>1.1.23</druid-datasource-version>
         <elasticsearch-client-version>7.14.0</elasticsearch-client-version>
         <jackson-databind.version>2.9.4</jackson-databind.version>
@@ -135,44 +134,6 @@
                 <type>pom</type>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-clients</artifactId>
-                <version>2.2.1</version>
-                <!--            <version>${kafka.version}</version>-->
-            </dependency>
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-streams</artifactId>
-                <version>${kafka.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-streams-test-utils</artifactId>
-                <version>${kafka.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.12</artifactId>
-                <version>${kafka.version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-messaging</artifactId>
-                <!--                <version>5.0.2.RELEASE</version>-->
-                <version>${spring-version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.retry</groupId>
-                <artifactId>spring-retry</artifactId>
-                <version>${spring-retry-version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>mysql</groupId>
@@ -260,21 +221,6 @@
 
         </dependency>
 
-        <!--        <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-starter-tomcat</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>com.crazymaker.webserver</groupId>
-                    <artifactId>spring-boot-netty-server</artifactId>
-                    <version>1.0</version>
-                </dependency>-->
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -283,15 +229,6 @@
         </dependency>
 
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.data</groupId>-->
-<!--            <artifactId>spring-data-jpa</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.alibaba</groupId>-->
-<!--            <artifactId>druid-spring-boot-starter</artifactId>-->
-<!--            <version>${druid-datasource-version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -313,23 +250,6 @@
             <version>2.1.2</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
-<!--        </dependency>-->
-
-        <!-- 使用 XA 事务时，需要引入此模块 -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.shardingsphere</groupId>-->
-        <!--            <artifactId>sharding-transaction-xa-core</artifactId>-->
-        <!--            <version>${shardingsphere.version}</version>-->
-        <!--        </dependency>-->
-        <!-- 使用 BASE 事务时，需要引入此模块 -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.shardingsphere</groupId>-->
-        <!--            <artifactId>sharding-transaction-base-seata-at</artifactId>-->
-        <!--            <version>${shardingsphere.version}</version>-->
-        <!--        </dependency>-->
 
 
         <dependency>
@@ -350,10 +270,6 @@
             <version>2.0.5.RELEASE</version>
             <scope>test</scope>
         </dependency>
-        <!--  <dependency>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-actuator</artifactId>
-          </dependency>-->
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -391,70 +307,4 @@
 
     </dependencies>
 
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.0.0.RELEASE</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build-info</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4.1</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- 添加docker-maven插件 -->
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.13</version>
-                <configuration>
-                    <imageName>${project.artifactId}:${project.version}</imageName>
-                    <baseImage>dockerlocal:5000/java:0.0.2</baseImage>
-                    <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
-                    <dockerDirectory>docker</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

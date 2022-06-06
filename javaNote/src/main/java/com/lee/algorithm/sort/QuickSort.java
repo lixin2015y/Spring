@@ -1,5 +1,9 @@
 package com.lee.algorithm.sort;
 
+import com.lee.algorithm.utils.ArrayUtils;
+import org.junit.Test;
+
+import java.util.Arrays;
 import java.util.TreeSet;
 
 /**
@@ -9,14 +13,31 @@ import java.util.TreeSet;
  **/
 public class QuickSort {
 
-    public static void main(String[] args) {
-        TreeSet<Integer> set = new TreeSet();
-        set.add(1);
-        set.add(10);
-        set.add(11);
-        set.add(7);
-        set.add(6);
-        set.add(7);
-        System.out.println(set);
+    /**
+     * 冒泡排序
+     */
+    @Test
+    public void test() {
+        int[] arr = new int[]{1, 4, 3, 2, 5, 6};
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[j] < arr[i]) {
+                    ArrayUtils.swap(arr, i, j);
+                }
+            }
+        }
+        System.out.println(Arrays.toString(arr));
     }
+
+    /**
+     * 快速排序
+     */
+    @Test
+    public void test2() {
+
+    }
+
+
+
+
 }
