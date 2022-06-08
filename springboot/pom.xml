@@ -26,7 +26,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -59,11 +58,13 @@
             <version>1.2.73</version>
         </dependency>
 
+
         <dependency>
-            <groupId>club.zhcs</groupId>
-            <artifactId>redission-l2-cache-spring-boot-starter</artifactId>
-            <version>2.5.6</version>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.16.4</version>
         </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
