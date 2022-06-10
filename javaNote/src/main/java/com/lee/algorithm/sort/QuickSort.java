@@ -40,7 +40,8 @@ public class QuickSort {
      */
     @Test
     public void test2() {
-        quickSortMe(arr, 0, arr.length - 1);
+//        quickSortMe(arr, 0, arr.length - 1);
+        quickSort2(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -72,6 +73,36 @@ public class QuickSort {
             System.out.println(Arrays.toString(arr) + " ===== " + keyIndex);
             quickSortMe(arr, start, keyIndex - 1);
             quickSortMe(arr, keyIndex + 1, end);
+        }
+    }
+
+    public void quickSort2(int[] arr, int start, int end) {
+        if (start < end) {
+            int l = start;
+            int r = end;
+            int key = arr[start];
+
+            while (l < r) {
+                while (l < r && arr[r] > key) {
+                    r--;
+                }
+                if (l < r) {
+                    // 这里代表arr[r] <= key了，进行交换
+                    ArrayUtils.swap(arr, l, r);
+                    l++;
+                }
+                // 这时候key在右侧，需要和左边的比较，找到左边第一个比key大的
+                while (l < r && arr[l] < key) {
+                    l++;
+                }
+                if (l < r) {
+                    // 找到一个左边的比基准大的
+                    ArrayUtils.swap(arr, l, r);
+                    r--;
+                }
+            }
+            quickSort2(arr, start, l);
+            quickSort2(arr, l + 1, end);
         }
     }
 
