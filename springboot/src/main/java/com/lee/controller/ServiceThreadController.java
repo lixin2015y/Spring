@@ -37,6 +37,7 @@ public class ServiceThreadController {
 
     public void init() {
         serviceThread.start();
+        inited.set(true);
     }
 
     Long generate() {
