@@ -1,0 +1,4 @@
+cat=com.spi.service.impl.Cat
+dog=com.spi.service.impl.Dog
+
+#com.spi.AnimalWrapper

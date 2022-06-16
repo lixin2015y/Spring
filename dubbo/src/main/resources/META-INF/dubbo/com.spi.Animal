@@ -1,4 +1,0 @@
-cat=com.spi.Cat
-dog=com.spi.Dog
-
-com.spi.AnimalWrapper

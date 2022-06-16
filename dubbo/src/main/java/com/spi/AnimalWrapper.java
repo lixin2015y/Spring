@@ -1,6 +1,6 @@
 package com.spi;
 
-import java.util.Calendar;
+import com.spi.service.Animal;
 
 public class AnimalWrapper implements Animal {
 

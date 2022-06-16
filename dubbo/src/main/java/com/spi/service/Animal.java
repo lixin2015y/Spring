@@ -1,4 +1,4 @@
-package com.spi;
+package com.spi.service;
 
 import com.alibaba.dubbo.common.extension.SPI;
 

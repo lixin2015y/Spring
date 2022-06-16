@@ -1,0 +1,2 @@
+red=com.spi.service.impl.RedColor
+black=com.spi.service.impl.BlackColor
