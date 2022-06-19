@@ -1,4 +1,5 @@
 import com.alibaba.druid.pool.DruidDataSource;
+import com.mysql.cj.x.protobuf.MysqlxExpr;
 import org.apache.shardingsphere.api.config.sharding.KeyGeneratorConfiguration;
 import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
@@ -7,6 +8,7 @@ import org.apache.shardingsphere.api.config.sharding.strategy.ShardingStrategyCo
 import org.apache.shardingsphere.shardingjdbc.api.ShardingDataSourceFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.util.StopWatch;
 
 
 import javax.sql.DataSource;
@@ -23,7 +25,7 @@ public class ShardingJdbcJavaApiTest {
 
     DataSource dataSource;
 
-    @Before
+    //    @Before
     public void buildShardingDataSource() throws SQLException {
         /*
          * 1. 数据源集合：dataSourceMap
@@ -42,7 +44,7 @@ public class ShardingJdbcJavaApiTest {
         Map<String, DataSource> dataSourceMap = new HashMap<>();
         // 添加数据源.
         // 两个数据源ds_0和ds_1
-        dataSourceMap.put("db0",druidDs1);
+        dataSourceMap.put("db0", druidDs1);
         dataSourceMap.put("db1", druidDs2);
 
         /**
@@ -66,7 +68,7 @@ public class ShardingJdbcJavaApiTest {
         //打印sql语句，生产环境关闭
         p.setProperty("sql.show", Boolean.TRUE.toString());
 
-        dataSource= ShardingDataSourceFactory.createDataSource(
+        dataSource = ShardingDataSourceFactory.createDataSource(
                 dataSourceMap, shardingRuleConfig, p);
 
     }
@@ -137,5 +139,36 @@ public class ShardingJdbcJavaApiTest {
         connection.close();
     }
 
+    @Test
+    public void test4() throws SQLException {
+        DataSource ebsDb = buildDruidDataSource(
+                "jdbc:mysql://172.16.2.204:3306/ebs?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&rewriteBatchedStatements=true&serverTimezone=UTC&allowMultiQueries=true",
+                "root", "byxf1qaz");
+        Connection connection = ebsDb.getConnection();
+        connection.setAutoCommit(false);
+        PreparedStatement preparedStatement = connection.prepareStatement("insert into ebs.user(id, out_id, filed1, filed2) values (?, ?, ?, ?)");
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        for (int i = 30000000; i < 60000000; i++) {
+            preparedStatement.setString(1, "AAAAAAAAAAAAAAAAAAAAAAAAAAA" + String.format("%08d", i));
+            preparedStatement.setString(2, "BBBBBBBBBBBBBBBBBBBBBBBBBBB" + String.format("%08d", i));
+            preparedStatement.setString(3, "CCCCCCCCCCCCCCCCCCCCCCCCCCC" + String.format("%08d", i));
+            preparedStatement.setString(4, "DDDDDDDDDDDDDDDDDDDDDDDDDDD" + String.format("%08d", i));
+            preparedStatement.addBatch();
+            if (i % 500000 == 0) {
+                preparedStatement.executeBatch();
+                preparedStatement.clearBatch();
+                connection.commit();
+                stopWatch.stop();
+                System.out.println(String.format("%08d", i) + "耗时：" + stopWatch.getLastTaskTimeMillis() / 1000 + "s");
+                stopWatch.start();
+            }
+        }
+        int[] ints = preparedStatement.executeBatch();
+        preparedStatement.clearBatch();
+        connection.commit();
+        System.out.println("完成" + stopWatch.getTotalTimeSeconds() + "s");
+
+    }
 
 }
