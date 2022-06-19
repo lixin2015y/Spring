@@ -28,7 +28,7 @@ public class Provider {
         /**
          * dubbo 启动原理
          * 注解@EnableDubbo指定一个包扫描的路径
-         * 内部实现注解@EnableDubboConfig和@DubboComponentScan
+         * 内部实现注解@EnableDubboConfiSerg和@DubboComponentScan
          * 注解@EnableDubboConfig通过引入一个类，完成两个任务
          *      1、解析配置文件，向容器中注入对应的ApplicationConfig等对象，
          *      2、生成与这个对象一一对应的一个beanPostProcessor，并指定那些属性是需要进行复制的，
