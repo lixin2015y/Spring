@@ -104,7 +104,7 @@
 
         <jedis.version>2.9.0</jedis.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
-        <mysql.connector.version>8.0.22</mysql.connector.version>
+        <mysql.connector.version>8.0.28</mysql.connector.version>
         <shardingsphere.version>4.1.0</shardingsphere.version>
         <!--        <mysql.connector.version>6.0.4</mysql.connector.version>-->
         <mybatis-plus-boot-starter.version>3.2.0</mybatis-plus-boot-starter.version>
@@ -138,7 +138,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>8.0.19</version>
+                <version>8.0.28</version>
 
             </dependency>
         </dependencies>
