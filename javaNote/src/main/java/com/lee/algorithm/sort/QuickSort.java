@@ -41,7 +41,8 @@ public class QuickSort {
     @Test
     public void test2() {
 //        quickSortMe(arr, 0, arr.length - 1);
-        quickSort2(arr, 0, arr.length - 1);
+//        quickSort2(arr, 0, arr.length - 1);
+        quickSort3(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -107,7 +108,32 @@ public class QuickSort {
     }
 
 
+    public void quickSort3(int[] arr, int start, int end) {
+        if (start >= end) {
+            return;
+        }
+        int target = arr[start];
+        int l = start;
+        int r = end;
+        while (l < r) {
+            while (l < r && arr[r] > target) {
+                r--;
+            }
+            if (l < r) {
+                arr[l++] = arr[r];
+            }
+            while (l < r && arr[l] < target) {
+                l++;
+            }
+            if (l < r) {
+                arr[r--] = arr[l];
+            }
+        }
+        arr[l] = target;
+        quickSort3(arr, start, l);
+        quickSort3(arr, l + 1, end);
 
+    }
 
 
 }
