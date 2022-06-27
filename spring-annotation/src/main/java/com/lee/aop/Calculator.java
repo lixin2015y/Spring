@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
  * @date: 2022-03-22
  **/
 public interface Calculator {
-    int div(int i, int j);
+    int div(int i, int j) throws ServiceException;
 
     int add(int i, int j);
 }
