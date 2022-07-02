@@ -6,12 +6,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
-//@Component
-//@Aspect
+@Component
+@Aspect
 public class LogAspects {
 
 
-    @Pointcut("execution(* com.lee.aop.CalculatorImpl.*(..))")
+    @Pointcut("execution(* com.lee.aop.Calculator.div(int ,int))")
     public void pointCut() {
     }
 
@@ -31,7 +31,9 @@ public class LogAspects {
     }
 
     @AfterThrowing(value = "pointCut()", throwing = "exception")
-    public void exceptionMethod(JoinPoint joinPoint, Exception exception) {
-        System.out.println("方法" + joinPoint.getSignature().getName() + Arrays.asList(joinPoint.getArgs()) + "异常");
+    public void exceptionMethod(JoinPoint joinPoint, ServiceException exception) {
+        System.out.println("joinPoint.getArgs() = " + Arrays.toString(joinPoint.getArgs()));
+        System.out.println(exception.getMsg());
+        System.out.println("方法==" + joinPoint.getSignature().getName() + Arrays.asList(joinPoint.getArgs()) + "异常");
     }
 }
