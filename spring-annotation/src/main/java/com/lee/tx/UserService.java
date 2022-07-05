@@ -14,6 +14,12 @@ public class UserService {
     @Transactional
     public void insert(String id,String name){
         userDao.insert(id, name);
+        delete();
         int a = 1 / 0;
+    }
+
+    @Transactional
+    public void delete() {
+        System.out.println("delete");
     }
 }
