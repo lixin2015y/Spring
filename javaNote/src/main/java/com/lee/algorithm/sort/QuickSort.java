@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import javax.xml.stream.events.EndDocument;
 import java.util.Arrays;
+import java.util.Stack;
 import java.util.TreeSet;
 
 /**
@@ -43,7 +44,8 @@ public class QuickSort {
     public void test2() {
 //        quickSortMe(arr, 0, arr.length - 1);
 //        quickSort2(arr, 0, arr.length - 1);
-        quickSort3(arr, 0, arr.length - 1);
+//        quickSort3(arr, 0, arr.length - 1);
+        quickSortNotDiGui(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -135,6 +137,50 @@ public class QuickSort {
         }
 
 
+    }
+
+    public void quickSortNotDiGui(int[] arr, int start, int end) {
+        Stack<Record> stack = new Stack<>();
+        stack.push(new Record(start, end));
+        while (!stack.isEmpty()) {
+            Record record = stack.pop();
+            int l = record.l;
+            int r = record.r;
+            int key = arr[l];
+            if (record.l < record.r) {
+                while (l < r) {
+                    while (l < r && arr[r] >= key) {
+                        r--;
+                    }
+                    if (l < r) {
+                        arr[l] = arr[r];
+                    }
+                    while (l < r && arr[l] <= arr[r]) {
+                        l++;
+                    }
+                    if (l < r) {
+                        arr[r] = arr[l];
+                    }
+                }
+                arr[l] = key;
+                if (record.l < l - 1) {
+                    stack.push(new Record(record.l, l - 1));
+                }
+                if (l + 1 < record.r) {
+                    stack.push(new Record(l + 1, record.r));
+                }
+            }
+
+        }
+    }
+    class Record {
+        public int l;
+        public int r;
+
+        public Record(int l, int r) {
+            this.l = l;
+            this.r = r;
+        }
     }
 
 
