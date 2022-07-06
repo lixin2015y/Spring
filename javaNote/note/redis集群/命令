@@ -1,0 +1,36 @@
+218
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9201/redis.conf
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9202/redis.conf
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9203/redis.conf
+
+scp -r  /home/coreapp/xuexi/redis coreapp@172.16.2.208:/home/coreapp/xuexi/redis
+scp -r /home/coreapp/xuexi/redis/* coreapp@172.16.2.213:/home/coreapp/xuexi/redis/
+scp -r /home/coreapp/xuexi/redis/conf/* coreapp@172.16.2.213:/home/coreapp/xuexi/redis/conf
+scp -r /home/coreapp/xuexi/redis/conf/* coreapp@172.16.2.208:/home/coreapp/xuexi/redis/conf
+
+
+208
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9204/redis.conf
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9205/redis.conf
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9206/redis.conf
+
+213
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9207/redis.conf
+/home/coreapp/xuexi/redis/bin/redis-server  /home/coreapp/xuexi/redis/conf/9208/redis.conf
+
+
+./redis-trib.rb create --replicas 1  192.168.1.47:8082 192.168.1.47:8083 192.168.1.47:8084
+
+./redis-cli --cluster help
+/home/coreapp/xuexi/redis/bin/redis-cli --cluster create --cluster-replicas 1  172.16.2.218:9201 172.16.2.218:9202 172.16.2.218:9203 172.16.2.208:9204 172.16.2.208:9205 172.16.2.208:9206
+
+向集群中添加节点，，
+/home/coreapp/xuexi/redis/bin/redis-cli  --cluster add-node 172.16.2.213:9207 172.16.2.218:9201
+
+reshard
+/home/coreapp/xuexi/redis/bin/redis-cli  --cluster reshard 172.16.2.213:9207
+
+加入从节点
+192.168.0.61:8008> cluster replicate 2728a594a0498e98e4b83a537e19f9a0a3790f38 #后面这串id为8007的节点id
+/home/coreapp/xuexi/redis/bin/redis-cli  --cluster add-node 172.16.2.213:9208 172.16.2.218:9201 --cluster-slave
+
