@@ -17,7 +17,8 @@ import java.util.TreeSet;
 public class QuickSort {
 
 
-    int[] arr = new int[]{1, 4, 3, 2, 6, 5};
+        int[] arr = new int[]{1, 4, 3, 2, 6, 5, 12, 45, 76, 3, 5, 7, 4};
+//    int[] arr = new int[]{1, 2, 3, 4, 5, 6, 7};
 
     /**
      * 冒泡排序
@@ -109,29 +110,30 @@ public class QuickSort {
 
 
     public void quickSort3(int[] arr, int start, int end) {
-        if (start >= end) {
-            return;
+        if (start < end) {
+            int l = start;
+            int r = end;
+            int key = arr[l];
+            while (l < r) {
+                while (l < r && arr[r] >= key) {
+                    r--;
+                }
+                if (l < r) {
+                    arr[l] = arr[r];
+                }
+
+                while (l < r && arr[l] <= key) {
+                    l++;
+                }
+                if (l < r) {
+                    arr[r] = arr[l];
+                }
+            }
+            arr[l] = key;
+            quickSort3(arr, start, l - 1);
+            quickSort3(arr, l + 1, end);
         }
-        int target = arr[start];
-        int l = start;
-        int r = end;
-        while (l < r) {
-            while (l < r && arr[r] > target) {
-                r--;
-            }
-            if (l < r) {
-                arr[l++] = arr[r];
-            }
-            while (l < r && arr[l] < target) {
-                l++;
-            }
-            if (l < r) {
-                arr[r--] = arr[l];
-            }
-        }
-        arr[l] = target;
-        quickSort3(arr, start, l);
-        quickSort3(arr, l + 1, end);
+
 
     }
 
