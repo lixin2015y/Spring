@@ -22,8 +22,8 @@ public class Main {
             @Override
             public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
                 System.out.println("before");
-                methodProxy.invokeSuper(o, objects);
-                System.out.println("after");
+                Object o1 = methodProxy.invokeSuper(o, objects);
+                System.out.println("after" + o1);
                 return "123123";
             }
         });
