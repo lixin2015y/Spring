@@ -5,6 +5,8 @@ import com.lee.proxy.jdk.IDaoImpl;
 import net.sf.cglib.core.DebuggingClassWriter;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.InvocationHandler;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
 
@@ -16,13 +18,16 @@ public class Main {
         Enhancer enhancer = new Enhancer();
         //设置需要代理的目标类
         enhancer.setSuperclass(IDaoImpl.class);
-        enhancer.setCallback(new InvocationHandler() {
+        enhancer.setCallback(new MethodInterceptor() {
             @Override
-            public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                return method.invoke(o, objects);
+            public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+                System.out.println("before");
+                methodProxy.invokeSuper(o, objects);
+                System.out.println("after");
+                return "123123";
             }
         });
-        IDao iDao = (IDao)enhancer.create();
+        IDaoImpl iDao = (IDaoImpl)enhancer.create();
         iDao.select();
 
     }
