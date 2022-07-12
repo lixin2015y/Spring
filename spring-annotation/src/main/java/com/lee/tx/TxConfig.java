@@ -21,8 +21,8 @@ public class TxConfig {
     public DataSource dataSource(){
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setUser("root");
-        dataSource.setPassword("123456");
-        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+        dataSource.setPassword("byxf1qaz");
+        dataSource.setJdbcUrl("jdbc:mysql://172.16.2.208:3306/test");
         return dataSource;
     }
 
