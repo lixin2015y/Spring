@@ -10,7 +10,9 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
+import redis.clients.jedis.JedisCluster;
 
+import javax.annotation.Resource;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
@@ -20,6 +22,9 @@ public class RedisTemplateTest {
     @Autowired
     @Qualifier("redisTemplate")
     RedisTemplate redisTemplate;
+
+    @Resource
+    JedisCluster jedisCluster;
 
     @Test
     public void test() {
@@ -60,7 +65,8 @@ public class RedisTemplateTest {
 
     @Test
     public void test5() {
-
+        Object eval = jedisCluster.eval("return ARGV[1]", 1, "acquire", "acquire", "1");
+        System.out.println(eval);
     }
 
 }
