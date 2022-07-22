@@ -1,8 +1,5 @@
 package com.lee.javaApi;
 
-import javafx.collections.transformation.SortedList;
-
-import javax.smartcardio.TerminalFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;

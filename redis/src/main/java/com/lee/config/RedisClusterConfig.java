@@ -1,4 +1,4 @@
-package com.lee.cong;
+package com.lee.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -13,7 +13,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +22,7 @@ public class RedisClusterConfig {
     private String clusterNodes;
 
     @Bean
-    public JedisCluster getJedisCluster() {
+    public JedisCluster jedisCluster() {
         String[] cNodes = clusterNodes.split(",");
         Set<redis.clients.jedis.HostAndPort> nodes = new HashSet<>();
         //分割出集群节点
@@ -34,15 +33,8 @@ public class RedisClusterConfig {
         return new JedisCluster(nodes);
     }
 
-    /**
-     * 设置数据存入redis 的序列化方式
-     * </br>redisTemplate序列化默认使用的jdkSerializeable,存储二进制字节码,导致key会出现乱码，所以自定义
-     * 序列化类
-     *
-     * @paramredisConnectionFactory
-     */
     @Bean
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) throws UnknownHostException {
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);

@@ -1,11 +1,8 @@
 package com.lee.netty.byteBuf;
 
-import com.sun.org.apache.regexp.internal.RE;
 import io.netty.buffer.*;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
-import jdk.management.resource.internal.inst.SocketOutputStreamRMHooks;
 import org.junit.Test;
 
 import java.nio.charset.Charset;

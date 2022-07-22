@@ -1,8 +1,6 @@
 
-
-
 --- 定义限流函数
-local function acquire(key, num)
+local function acquire(key, apply_num)
     --- 这里是获取当前时间戳（秒）
     local times = redis.call('TIME');
     -- times[1] 秒数   -- times[2] 微秒数
@@ -10,18 +8,44 @@ local function acquire(key, num)
     curr_mill_second = curr_mill_second / 1000;
 
     ---获取令牌通配置，
-    local limitConfig = redis.pcall("HMGET", key, "last_apply_time", "curr_permits", "max_permits", "rate");
-    --- 上次申请时间、当前令牌数、最大令牌数、令牌发放速率（每秒发放多少个）
-    local lastApplyTime = limitConfig[1];
-    local currPermits = limitConfig[2];
-    local maxPermits = limitConfig[3];
-    local rate = limitConfig[4];
+    local limit_key = redis.call("HMGET", key, "max_permits", "rate", "last_apply_time", "curr_permits");
+    local max_permits = limit_key[1];
+    local rate = limit_key[2];
+    local last_apply_time = limit_key[3];
+    local curr_permits = limit_key[4];
 
-    if(type(lastApplyTime) ~= 'boolean' and lastApplyTime ~= nil) then
+    --- 局部变量：本次的令牌数
+    local local_curr_permits = 0;
+    if(type(last_apply_time) ~= 'boolean' and last_apply_time ~= nil) then
+        --- 这里已经初始化过了
+        --- 计算这一段时间生成的令牌书
+        local reserve_num = ((curr_mill_second - last_apply_time) / 1000) * rate;
 
+        --- 当一段时间未请求的最大请求数量配置起作用
+        local_curr_permits = math.min(reserve_num + curr_permits, max_permits);
     else
-        redis.pcall("HSET", key, "last_mill_second", curr_mill_second)
+        --- 第一次初始化
+        redis.call("HMSET", key, "last_mill_second", curr_mill_second, "max_permits", 1, "rate", 1);
         local_curr_permits = max_permits;
     end
 
+    if(local_curr_permits >= apply_num) then
+        ---不限流
+        redis.call("HMSET", key, "last_apply_time", curr_mill_second, "curr_permits", local_curr_permits - apply_num);
+        return 1
+    else
+        ---限流
+        return -1
+    end
+end
+
+local method = KEYS[1]
+
+if (method == 'acquire') then
+    local id = ARGV[1]
+    local apply_num = ARGV[2]
+    return acquire(id, tonumber(apply_num));
+     --return apply_num;
+else
+    return method;
 end
