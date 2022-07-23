@@ -23,6 +23,7 @@
         <module>sharding-jdbc</module>
         <module>netty</module>
         <module>api</module>
+        <module>learning</module>
     </modules>
 
     <properties>

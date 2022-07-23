@@ -25,7 +25,12 @@ public class LockSaleTicket {
         }, "AA");
 
         Thread bbThread = new Thread(() -> {
-            lock.lock();
+            try {
+                lock.lockInterruptibly();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                System.out.println("异常");
+            }
             System.out.println(Thread.currentThread().getName() + "开始执行");
             for (int i = 0; i < 10; i++) {
                 System.out.println(Thread.currentThread().getName() + "开始执行");
