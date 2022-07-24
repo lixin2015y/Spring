@@ -22,7 +22,7 @@ public class KmeansCluster {
     /**
      * 训练数据集文件地址
      */
-    private static final String TRAINING_DATASET_FILENAME = "kmeans/output.arff";
+    private static final String TRAINING_DATASET_FILENAME = "output/ARDS_Kmeans(1).arff";
 
     public static void main(String[] args) {
         try {

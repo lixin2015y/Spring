@@ -43,12 +43,14 @@ public class Main {
             for (int i = 0; i < sum; i++) {
                 double target = instancesTest.instance(i).classValue();
                 double predicate = classifier.classifyInstance(instancesTest.instance(i));
+                System.out.println(instancesTest.instance(i));
                 System.out.println(dFormat.format(target) + "----" + dFormat.format(predicate));
 
                 if (dFormat.format(target).equals(dFormat.format(predicate))) {
                     right++;
                 }
             }
+
             System.out.println(right * 100 / sum + "%");
         } catch (Exception e) {
             e.printStackTrace();
