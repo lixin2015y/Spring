@@ -21,7 +21,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // 训练语料文件
-        File inputFile = new File("output/气压伤预测1.arff");
+        File inputFile = new File("output/Sepsis_预测-ada.arff");
 
         Classifier randomForest = new RandomForest();
         ArffLoader atf = new ArffLoader();
@@ -44,7 +44,7 @@ public class Main {
 
         // 保存模型
         // 参数一为模型保存文件，classifier4为要保存的模型
-        SerializationHelper.write("D:/LibSVM.model", randomForest);
+        SerializationHelper.write("D:/Sepsis_预测.model", randomForest);
 
         // 测试分类结果  1
         for (int i = 0; i < sum; i++) {
