@@ -2,13 +2,18 @@ package weka.randomforest;
 
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
+import org.junit.Test;
+import sun.misc.Unsafe;
 import weka.classifiers.Classifier;
 import weka.classifiers.meta.AdaBoostM1;
 import weka.classifiers.meta.AdditiveRegression;
 import weka.classifiers.trees.RandomForest;
-import weka.core.Instances;
-import weka.core.SerializationHelper;
+import weka.core.*;
 import weka.core.converters.ArffLoader;
 
 public class Main {
@@ -67,6 +72,64 @@ public class Main {
         System.out.println(right2);
         System.out.println(sum);
         System.out.println("RandomForest classification precision:" + (right / sum));
+    }
+    @Test
+    public void test2() throws Exception {
+        // @relation 气压伤预测
+        //
+        //@attribute �Ƿ���ѹ�� numeric
+        //@attribute ���θ�Ⱦ numeric
+        //@attribute �ǵ��Ͳ�ԭ�� numeric
+        //@attribute ECMO��θ��� numeric
+        //@attribute ���� numeric
+        //@attribute fio2b6h numeric
+        //@attribute rrD1 numeric
+        //@attribute TD1 numeric
+        Classifier classifier8 = (Classifier) weka.core.SerializationHelper.read("D:/LibSVM.model");
+        Instances instances = generatePopularInstance(null);
+        for (int i = 0; i < instances.size(); i++) {
+            System.out.println("instancesTest.instance(i) = " + instances.instance(i) + "====" + instances.instance(i).classValue()+ "===" + classifier8.classifyInstance(instances.instance(i)));
+        }
+    }
+
+
+    private Instances generatePopularInstance(List<Map> entities) {
+        //set attributes
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("�Ƿ���ѹ��"));
+        attributes.add(new Attribute("���θ�Ⱦ"));
+        attributes.add(new Attribute("�ǵ��Ͳ�ԭ��"));
+        attributes.add(new Attribute("ECMO��θ���"));
+        attributes.add(new Attribute("����"));
+        attributes.add(new Attribute("fio2b6h"));
+        attributes.add(new Attribute("rrD1"));
+        attributes.add(new Attribute("TD1"));
+
+        Instance instance = new DenseInstance(attributes.size());
+        instance.setValue(0, 1.1);
+        instance.setValue(1, 2.1);
+        instance.setValue(2, 4.1);
+        instance.setValue(3, 5.1);
+        instance.setValue(4, 6.1);
+        instance.setValue(5, 2.1);
+        instance.setValue(6, 4.1);
+        instance.setValue(7, 5.1);
+        //set instances
+        Instances instances = new Instances("repo_popular",attributes,0);
+        instances.setClassIndex(0);
+        instances.add(instance);
+        //add instance
+//        for (SecRepoEntity secRepoEntity: entities) {
+//            Instance instance = new DenseInstance(attributes.size());
+//            instance.setValue(0,secRepoEntity.getForkCount());
+//            instance.setValue(1,secRepoEntity.getSize());
+//            instance.setValue(2,secRepoEntity.getSumFollower());
+//            instance.setValue(3,secRepoEntity.getAvgFollower());
+//            instance.setValue(4,secRepoEntity.getWeightFollower());
+//            instances.add(instance);
+//        }
+
+        return instances;
     }
 }
 
