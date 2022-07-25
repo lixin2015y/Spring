@@ -30,7 +30,10 @@ public class LimitController {
         args.add(id);
         args.add("1");
 //        Object eval = jedisCluster.eval(limitScript, 1, "acquire", "acquire", "1");
-        Object eval = jedisCluster.eval(limitScript, 1,  "limit:" + id, "1");
+//        Object eval = jedisCluster.eval(limitScript, 1,  "limit:" + id, "1");
+
+        Object eval = jedisCluster.evalsha("3f1890b494dc70734a69b2622b591ca57510d32f", 1,  "limit:" + id, "1");
+
 
         System.out.println(eval);
         return (Long)eval > 0 ? "通过" : "限流";

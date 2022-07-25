@@ -1,4 +1,8 @@
 
+---[coreapp@t2-28-218 bin]$ ./redis-cli -p 9201 script load "$(cat  /home/coreapp/xuexi/redis/lua/limitRate.lua)"
+---"3f1890b494dc70734a69b2622b591ca57510d32f"
+---[coreapp@t2-28-218 bin]$
+
 --- 定义限流函数
 local function acquire(key, apply_num)
     --- 这里是获取当前时间戳（秒）
