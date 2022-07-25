@@ -18,7 +18,7 @@ import java.util.TreeSet;
 public class QuickSort {
 
 
-        int[] arr = new int[]{1, 4, 3, 2, 6, 5, 12, 45, 76, 3, 5, 7, 4};
+    int[] arr = new int[]{1, 4, 3, 2, 6, 5, 12, 45, 76, 3, 5, 7, 4};
 //    int[] arr = new int[]{1, 2, 3, 4, 5, 6, 7};
 
     /**
@@ -45,7 +45,8 @@ public class QuickSort {
 //        quickSortMe(arr, 0, arr.length - 1);
 //        quickSort2(arr, 0, arr.length - 1);
 //        quickSort3(arr, 0, arr.length - 1);
-        quickSortNotDiGui(arr, 0, arr.length - 1);
+//        quickSortNotDiGui(arr, 0, arr.length - 1);
+        quickSortWithThreePivot(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -173,6 +174,51 @@ public class QuickSort {
 
         }
     }
+
+    public void quickSortWithThreePivot(int[] arr, int start, int end) {
+        if (start < end) {
+            // 计算key
+            int l = start;
+            int r = end;
+            int mid = (l + r) / 2;
+            int key = midValue(arr[l], arr[mid], arr[r]);
+            arr[mid] = arr[l];
+            while (l < r) {
+                while (l < r && arr[r] >= key) {
+                    r--;
+                }
+                if (l < r) {
+                    arr[l++] = arr[r];
+                }
+                while (l < r && arr[l] <= key) {
+                    l++;
+                }
+                if (l < r) {
+                    arr[r--] = arr[l];
+                }
+            }
+            arr[l] = key;
+            quickSortWithThreePivot(arr, start, l);
+            quickSortWithThreePivot(arr, l + 1, end);
+        }
+    }
+
+    private int midValue(int a, int b, int c) {
+        if (a == b || a == c) {
+            return a;
+        }
+        if (b == c) {
+            return b;
+        }
+        if ((a - b) * (b - c) > 0) {
+            return b;
+        } else if ((b - a) * (a - c) > 0) {
+            return a;
+        } else {
+            return c;
+        }
+    }
+
     class Record {
         public int l;
         public int r;
