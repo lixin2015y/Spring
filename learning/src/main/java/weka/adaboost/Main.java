@@ -1,6 +1,5 @@
 package weka.adaboost;
 
-import com.sun.deploy.util.StringUtils;
 import weka.classifiers.Classifier;
 import weka.classifiers.meta.AdaBoostM1;
 import weka.core.Instances;
@@ -8,8 +7,6 @@ import weka.core.SerializationHelper;
 import weka.core.converters.ArffLoader;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 
 public class Main {

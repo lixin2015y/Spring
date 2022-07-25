@@ -25,11 +25,11 @@ local function acquire(key, apply_num)
         local_curr_permits = math.min(reserve_num + curr_permits, max_permits);
     else
         --- 第一次初始化
-        redis.call("HMSET", key, "last_mill_second", curr_mill_second, "max_permits", 1, "rate", 1);
-        local_curr_permits = max_permits;
+        redis.call("HMSET", key, "last_apply_time", curr_mill_second, "max_permits", 1, "rate", 1);
+        local_curr_permits = 1;
     end
 
-    if(local_curr_permits >= apply_num) then
+    if(tonumber(local_curr_permits) >= tonumber(apply_num)) then
         ---不限流
         redis.call("HMSET", key, "last_apply_time", curr_mill_second, "curr_permits", local_curr_permits - apply_num);
         return 1
@@ -39,13 +39,6 @@ local function acquire(key, apply_num)
     end
 end
 
-local method = KEYS[1]
-
-if (method == 'acquire') then
-    local id = ARGV[1]
-    local apply_num = ARGV[2]
-    return acquire(id, tonumber(apply_num));
-     --return apply_num;
-else
-    return method;
-end
+local id = KEYS[1]
+local apply_num = ARGV[1]
+return acquire(id, tonumber(apply_num));
