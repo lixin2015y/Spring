@@ -42,7 +42,7 @@ public class Producer {
 
                 for(int j = 0 ; j <= 5 ; j ++){
                     Message msg =
-                            new Message("OrderTopicTest", "order_"+orderId, "KEY" + orderId,
+                            new Message("test-order-1", "order_"+orderId, "KEY" + orderId,
                                     ("order_"+orderId+" step " + j).getBytes(RemotingHelper.DEFAULT_CHARSET));
                     SendResult sendResult = producer.send(msg, new MessageQueueSelector() {
                         @Override
