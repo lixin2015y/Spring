@@ -22,7 +22,7 @@ public class CountDownLatchDemo {
                 countDownLatch.countDown();
             }).start();
         }
-        countDownLatch.await(2, TimeUnit.SECONDS);
+        countDownLatch.await();
         System.out.println(Thread.currentThread().getName() + "班长锁门了");
     }
 }
