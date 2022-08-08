@@ -10,7 +10,7 @@ public class TxTest {
     public void test() {
         final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TxConfig.class);
         final UserService userService = context.getBean(UserService.class);
-        userService.insert("333", "lixin");
+        userService.insert(4444, "lixin");
 
     }
 }

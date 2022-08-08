@@ -1,6 +1,7 @@
 package com.lee.tx;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -11,15 +12,15 @@ public class UserService {
     @Resource
     UserDao userDao;
 
-    @Transactional
-    public void insert(String id,String name){
+
+    public void insert(Integer id,String name){
         userDao.insert(id, name);
-        delete();
-        int a = 1 / 0;
+        delete(333);
     }
 
-    @Transactional
-    public void delete() {
-        System.out.println("delete");
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void delete(Integer id) {
+        userDao.delete(id);
+        int a = 1 / 0;
     }
 }
