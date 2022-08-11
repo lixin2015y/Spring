@@ -21,7 +21,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // 训练语料文件
-        File inputFile = new File("output/Sepsis_预测-ada.arff");
+        File inputFile = new File("output/MIMIC_cluster(1).arff");
 
         Classifier randomForest = new RandomForest();
         ArffLoader atf = new ArffLoader();
@@ -29,7 +29,7 @@ public class Main {
         // 读入训练文件
         Instances instancesTrain = atf.getDataSet();
         // 测试语料文件
-        inputFile = new File("output/气压伤预测2.arff");
+        inputFile = new File("output/MIMIC_cluster(1).arff");
         atf.setFile(inputFile);
         // 读入测试文件
         Instances instancesTest = atf.getDataSet();
@@ -44,7 +44,7 @@ public class Main {
 
         // 保存模型
         // 参数一为模型保存文件，classifier4为要保存的模型
-        SerializationHelper.write("D:/Sepsis_预测.model", randomForest);
+        SerializationHelper.write("D:/MIMIC_cluster.model", randomForest);
 
         // 测试分类结果  1
         for (int i = 0; i < sum; i++) {
@@ -58,7 +58,7 @@ public class Main {
         }
 
         // 获取上面保存的模型
-        Classifier classifier8 = (Classifier) weka.core.SerializationHelper.read("D:/LibSVM.model");
+        Classifier classifier8 = (Classifier) weka.core.SerializationHelper.read("D:/MIMIC_cluster.model");
         double right2 = 0.0f;
         // 测试分类结果  2 (通过)
         for (int i = 0; i < sum; i++) {
@@ -66,6 +66,7 @@ public class Main {
             if ((classifier8.classifyInstance(instancesTest.instance(i)) > 0.5f ? 1.0f : 0.0f )== instancesTest.instance(i).classValue()) {
                 // 正确值加1
                 right2++;
+                System.out.println("=======" + classifier8.classifyInstance(instancesTest.instance(i)));
             }
         }
         System.out.println(right);
@@ -130,6 +131,39 @@ public class Main {
 //        }
 
         return instances;
+    }
+
+
+    @Test
+    public void test() throws Exception {
+        Classifier classifier8 = (Classifier) weka.core.SerializationHelper.read("D:/MIMIC_cluster.model");
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        Attribute attribute = new Attribute("label");
+        attributes.add(attribute);
+        attributes.add(new Attribute("apsiii"));
+        attributes.add(new Attribute("hemoglobin_min"));
+        attributes.add(new Attribute("aniongap_max"));
+        attributes.add(new Attribute("bicarbonate_max"));
+        attributes.add(new Attribute("bun_max"));
+        attributes.add(new Attribute("glucose_max"));
+        attributes.add(new Attribute("sodium_max"));
+        attributes.add(new Attribute("potassium_max"));
+        attributes.add(new Attribute("fio2"));
+        Instance instance = new DenseInstance(attributes.size());
+        instance.setValue(1, 41);
+        instance.setValue(2, 9.8);
+        instance.setValue(3, 15);
+        instance.setValue(4, 26);
+        instance.setValue(5, 19);
+        instance.setValue(6, 118);
+        instance.setValue(7, 134);
+        instance.setValue(8, 3.4);
+        instance.setValue(9, 0.5);
+        Instances instances = new Instances("repo_popular2", attributes, 0);
+        instances.setClassIndex(0);
+        instances.add(instance);
+
+        System.out.println("classifier8.classifyInstance(instances.instance(0)) = " + classifier8.classifyInstance(instances.instance(0)));
     }
 }
 
