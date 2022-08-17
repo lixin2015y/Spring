@@ -62,7 +62,7 @@ public class Algorithm {
     public void test2() {
         Solution solution = new Solution();
         int[] array = new int[]{1, 5, 11, 5};
-        boolean b = solution.canPartition2(array);
+        boolean b = solution.canPartition3(array);
         System.out.println(b);
     }
 
@@ -116,12 +116,54 @@ public class Algorithm {
             for (int i = 1; i < nums.length; i++) {
                 for (int j = 1; j <= target; j++) {
                     if (j < nums[i]) {
-                        dp[i][j] = dp[i- 1][j];
+                        dp[i][j] = dp[i - 1][j];
                     } else {
                         dp[i][j] = Math.max(dp[i - 1][j], dp[i - 1][j - nums[i]] + nums[i]);
                     }
                 }
             }
+
+            if (dp[nums.length - 1][target] == target) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public boolean canPartition3(int[] nums) {
+            int target = 0;
+            for (int n : nums) {
+                target += n;
+            }
+            target = target / 2;
+
+            // 表示 编号 0- i-1的商品随便选，j个容量能放的最大值
+            int dp[][] = new int[nums.length][12];
+
+            // 初始化第一行
+            for (int j = nums[0]; j <= target; j++) {
+                if (j >= nums[0]) {
+                    dp[0][j] = nums[0];
+                }
+            }
+
+            // 初始化第一列
+
+
+            for (int i = 1; i < nums.length; i++) {
+                for (int j = 1; j <= target; j++) {
+                    if (j < nums[i]) {
+                        dp[i][j] = dp[i - 1][j];
+                    } else {
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i - 1][j - nums[i]] + nums[i]);
+                    }
+                }
+            }
+
+            if (dp[nums.length - 1][target] == target) {
+                return true;
+            }
+
             return false;
         }
     }
