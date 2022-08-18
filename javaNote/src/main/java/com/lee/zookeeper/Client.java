@@ -40,15 +40,9 @@ public class Client {
     }
 
     @Test
-    public void test1() throws InterruptedException, KeeperException, IOException {
-        String s = zk.create("/path1", "d1".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        System.out.println(s);
-//        System.in.read();
-
-    }
-
     @After
     public void close() throws InterruptedException {
+
         zk.close();
     }
 }
