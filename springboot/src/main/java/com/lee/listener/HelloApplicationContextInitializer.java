@@ -9,4 +9,6 @@ public class HelloApplicationContextInitializer implements ApplicationContextIni
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
         System.out.println("ConfigurableApplicationContext......initialize()");
     }
+
+
 }
