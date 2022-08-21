@@ -13,6 +13,7 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class RedisClusterConfig {
     private String clusterNodes;
 
     @Bean
-    public JedisCluster jedisCluster() {
+    public JedisClusterPlus jedisClusterPlus() {
         String[] cNodes = clusterNodes.split(",");
         Set<redis.clients.jedis.HostAndPort> nodes = new HashSet<>();
         //分割出集群节点
@@ -31,7 +32,7 @@ public class RedisClusterConfig {
             String[] hp = node.split(":");
             nodes.add(new HostAndPort(hp[0], Integer.parseInt(hp[1])));
         }
-        return new JedisCluster(nodes);
+        return new JedisClusterPlus(nodes, 2000, 2000, new JedisPoolConfig());
     }
 
     @Bean

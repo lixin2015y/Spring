@@ -1,4 +1,5 @@
 import com.lee.App;
+import com.lee.config.JedisClusterPlus;
 import com.lee.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -6,14 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisClusterNode;
+import org.springframework.data.redis.core.KeyBoundCursor;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Pipeline;
+import redis.clients.util.JedisClusterCRC16;
+import sun.applet.Main;
+import sun.java2d.pipe.SolidTextRenderer;
 
 import javax.annotation.Resource;
-import java.util.Set;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)
@@ -24,15 +32,13 @@ public class RedisTemplateTest {
     RedisTemplate redisTemplate;
 
     @Resource
-    JedisCluster jedisCluster;
+    JedisClusterPlus jedisClusterPlus;
 
     @Test
     public void test() {
-
         ValueOperations valueOperations = redisTemplate.opsForValue();
         valueOperations.set("lixin", "李新");
         System.out.println(valueOperations.get("lixin"));
-
     }
 
     @Test
@@ -65,8 +71,42 @@ public class RedisTemplateTest {
 
     @Test
     public void test5() {
-        Object eval = jedisCluster.eval("return ARGV[1]", 1, "acquire", "acquire", "1");
+        Object eval = jedisClusterPlus.eval("return ARGV[1]", 1, "acquire", "acquire", "1");
         System.out.println(eval);
+    }
+
+    @Test
+    public void test6() {
+        Map<JedisPool, List<String>> map = new HashMap<>();
+        for (int i = 0; i < 10; i++) {
+            String key = "yyyyy" + i;
+            int slot = JedisClusterCRC16.getSlot(key);
+            System.out.println("slot = " + slot);
+            JedisPool jedisPool = jedisClusterPlus.getConnectionHandler().getJedisPoolFromSlot(slot);
+
+            if (map.containsKey(jedisPool)) {
+                List<String> strings = map.get(jedisPool);
+                strings.add(key);
+            } else {
+                List<String> list = new ArrayList<>();
+                list.add(key);
+                map.put(jedisPool, list);
+            }
+            List<String> list = map.getOrDefault(jedisPool, new ArrayList<>());
+            list.add(key);
+        }
+        for (JedisPool jedisPool : map.keySet()) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                Pipeline pipelined = jedis.pipelined();
+                List<String> strings = map.get(jedisPool);
+                for (String string : strings) {
+                    pipelined.lpush(string, string);
+                }
+                List<Object> objects = pipelined.syncAndReturnAll();
+                System.out.println(objects);
+            }
+            System.out.println("======================");
+        }
     }
 
 }
