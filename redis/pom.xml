@@ -66,6 +66,17 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.11.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
+            <version>4.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-srvutil</artifactId>
+            <version>4.7.1</version>
+        </dependency>
     </dependencies>
 
 </project>

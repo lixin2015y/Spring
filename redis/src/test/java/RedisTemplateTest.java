@@ -109,4 +109,21 @@ public class RedisTemplateTest {
         }
     }
 
+    // fluash all
+    @Test
+    public void test7() {
+        Map<String, JedisPool> clusterNodes = jedisClusterPlus.getClusterNodes();
+        for (Map.Entry<String, JedisPool> jedisPoolEntry : clusterNodes.entrySet()) {
+            JedisPool jedisPool = jedisPoolEntry.getValue();
+            try (Jedis jedis = jedisPool.getResource()){
+                try {
+                    jedis.flushAll();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(jedisPoolEntry.getKey() + "清理完成");
+            }
+        }
+    }
+
 }

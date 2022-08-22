@@ -1,0 +1,5 @@
+# 启动nameserv
+nohup sh mqnamesrv &
+
+/home/coreapp/xuexi/module/rocketmq/bin/mqbroker -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-a.properties
+
