@@ -19,6 +19,7 @@ public class RocketMqProducerDemo {
     public void before() throws MQClientException {
         producer = new DefaultMQProducer("ProducerGroupName");
         producer.setNamesrvAddr("172.16.2.218:9876");
+        producer.setSendMsgTimeout(6000);
         producer.start();
         msg.setTopic("test-1");
         msg.setTags("tag-1");

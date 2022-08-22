@@ -24,6 +24,7 @@ public class CouponController {
 
     @GetMapping("generate")
     String generate(String couponId, Integer num) throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
+
         List<Message> messageList = new ArrayList<>();
         int index = 0;
         if (num > 5000) {
@@ -55,7 +56,9 @@ public class CouponController {
             message.setBody(JSON.toJSONString(generateCouponConfig).getBytes());
             messageList.add(message);
         }
-        defaultMQProducer.send(messageList);
+        for (int i = 0; i < messageList.size(); i++) {
+            defaultMQProducer.send(messageList.get(i));
+        }
         return "成功";
     }
 
