@@ -10,6 +10,7 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListener;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -29,9 +30,10 @@ public class RocketMqListener {
 
     @Bean
     DefaultMQPushConsumer defaultMQPushConsumer() throws MQClientException {
-        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer("consumer_group_1");
+        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer("ams-coupon-consume-1");
         defaultMQPushConsumer.setNamesrvAddr("172.16.2.218:9876");
-        defaultMQPushConsumer.subscribe("ams-coupon", "coupon-generate");
+        defaultMQPushConsumer.subscribe("ams-coupon", "ams-coupon-generate");
+        defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         defaultMQPushConsumer.registerMessageListener(new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
@@ -43,13 +45,13 @@ public class RocketMqListener {
                     int slot = JedisClusterCRC16.getSlot(key);
                     JedisPool jedisPool = jedisClusterPlus.getConnectionHandler().getJedisPoolFromSlot(slot);
                     try (Jedis jedis = jedisPool.getResource()) {
-                        log.info("当前key对应的节点{}", jedis);
+                        log.info("当前key对应的节点{}", jedis.getClient().getHost() + ":" + jedis.getClient().getPort());
                         Pipeline pipelined = jedis.pipelined();
                         for (Integer i = 0; i < generateCouponConfig.getNumber(); i++) {
                             pipelined.lpush(key, UUID.randomUUID().toString());
                         }
-                        Response<List<Object>> exec = pipelined.exec();
-                        System.out.println(exec);
+                        List<Object> objects = pipelined.syncAndReturnAll();
+                        System.out.println("结果" + objects);
                     }
                 }
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

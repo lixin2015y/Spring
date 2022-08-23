@@ -27,7 +27,7 @@ public class CouponController {
 
         List<Message> messageList = new ArrayList<>();
         int index = 0;
-        if (num > 5000) {
+        if (num < 5000) {
             Message message = new Message();
             message.setTopic("ams-coupon");
             message.setTags("ams-coupon-generate");
