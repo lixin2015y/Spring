@@ -1,11 +1,12 @@
 # 启动nameserv
-nohup sh mqnamesrv > nameser.log &
+nohup sh mqnamesrv -n "172.16.2.218:9876" > nameser.log &
 
-/home/coreapp/xuexi/module/rocketmq/bin/mqbroker -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-a.properties
-/home/coreapp/xuexi/module/rocketmq/bin/mqbroker -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-b-s.properties
+nohup /home/coreapp/xuexi/module/rocketmq/bin/mqbroker -n 172.16.2.218:9876 -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-a.properties > a.log &
+/home/coreapp/xuexi/module/rocketmq/bin/mqbroker -n 172.16.2.218:9876 -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-b-s.properties
 
-nohup /home/coreapp/xuexi/module/rocketmq/bin/mqbroker -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-b.properties > b.log &
-nohup /home/coreapp/xuexi/module/rocketmq/bin/mqbroker -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-a-s.properties > a-s.log &
+nohup /home/coreapp/xuexi/module/rocketmq/bin/mqbroker -n 172.16.2.218:9876 -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-b.properties > b.log &
+nohup /home/coreapp/xuexi/module/rocketmq/bin/mqbroker -n 172.16.2.218:9876 -c /home/coreapp/xuexi/module/rocketmq/conf/2m-2s-async/broker-a-s.properties > a-s.log &
 
 nohup java -jar rocketmq-console-ng-1.0.1.jar --server.port=8754 --rocketmq.config.namesrvAddr=172.16.2.218:9876 > console.log &
+
 

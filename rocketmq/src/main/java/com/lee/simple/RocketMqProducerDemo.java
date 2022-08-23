@@ -29,7 +29,6 @@ public class RocketMqProducerDemo {
     @Test
     public void test1() throws MQBrokerException, RemotingException, InterruptedException, MQClientException {
         // 同步发送
-
         producer.send(msg);
     }
 
