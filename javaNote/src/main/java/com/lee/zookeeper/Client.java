@@ -26,7 +26,7 @@ public class Client {
     @Before
     public void connect() throws IOException, InterruptedException {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        zk = new ZooKeeper("172.16.2.204:2181", 5000, watchedEvent -> {
+        zk = new ZooKeeper("172.16.2.218:2181", 5000, watchedEvent -> {
             log.info("接收到事件通知，{}", JSON.toJSONString(watchedEvent));
             if (watchedEvent.getType() == Watcher.Event.EventType.None
                     && watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {
@@ -40,6 +40,18 @@ public class Client {
     }
 
     @Test
+    public void test() throws InterruptedException, KeeperException {
+        String s = zk.create("/lixin/test1", "lixin".getBytes(), null, CreateMode.EPHEMERAL);
+
+    }
+
+
+    @Test
+    public void test2() throws InterruptedException, KeeperException {
+        zk.addWatch("/lixin/test1/", AddWatchMode.PERSISTENT_RECURSIVE);
+
+    }
+
     @After
     public void close() throws InterruptedException {
 

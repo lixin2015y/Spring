@@ -42,11 +42,11 @@ public class QuickSort {
      */
     @Test
     public void test2() {
-//        quickSortMe(arr, 0, arr.length - 1);
+        quickSortMe(arr, 0, arr.length - 1);
 //        quickSort2(arr, 0, arr.length - 1);
 //        quickSort3(arr, 0, arr.length - 1);
 //        quickSortNotDiGui(arr, 0, arr.length - 1);
-        quickSortWithThreePivot(arr, 0, arr.length - 1);
+//        quickSortWithThreePivot(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -54,32 +54,40 @@ public class QuickSort {
         if (start < end) {
             int l = start;
             int r = end;
-            int key = arr[l];
-            int keyIndex = l;
-
+            int target = arr[l];
             while (l < r) {
-                while (l < r && arr[r] > key) {
+                while (l < r && arr[r] > target) {
                     r--;
                 }
                 if (l < r) {
-                    ArrayUtils.swap(arr, l, r);
-                    keyIndex = r;
-                    l++;
+                    arr[l++] = arr[r];
                 }
-                while (l < r && arr[l] < key) {
+                while (l < r && arr[l] < target) {
                     l++;
                 }
                 if (l < r) {
-                    ArrayUtils.swap(arr, l, r);
-                    keyIndex = l;
-                    r--;
+                    arr[r--] = arr[l];
                 }
             }
-            System.out.println(Arrays.toString(arr) + " ===== " + keyIndex);
-            quickSortMe(arr, start, keyIndex - 1);
-            quickSortMe(arr, keyIndex + 1, end);
+            arr[l] = target;
+            quickSortMe(arr, start, l - 1);
+            quickSortMe(arr, l + 1, end);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public void quickSort2(int[] arr, int start, int end) {
         if (start < end) {
