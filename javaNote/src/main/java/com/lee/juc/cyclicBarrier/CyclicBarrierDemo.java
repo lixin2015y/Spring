@@ -10,7 +10,7 @@ public class CyclicBarrierDemo {
             System.out.println(Thread.currentThread().getName() + "找齐七科龙珠，召唤神龙");
         });
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 1; i <= 7; i++) {
             new Thread(() -> {
                 System.out.println(Thread.currentThread().getName() + "找到龙珠");
                 try {
@@ -18,7 +18,7 @@ public class CyclicBarrierDemo {
                 } catch (InterruptedException | BrokenBarrierException e) {
                     e.printStackTrace();
                 }
-            }, String.valueOf(i)).start();
+            }, "=====" + i).start();
         }
 
 
