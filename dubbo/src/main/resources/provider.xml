@@ -17,6 +17,6 @@
 
     <dubbo:protocol prompt="20881" name="dubbo"/>
 
-    <dubbo:service interface="com.api.service.DemoService" ref="demoService"/>
+    <dubbo:service interface="com.lee.service.DemoService" ref="demoService"/>
 
 </beans>

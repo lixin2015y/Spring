@@ -1,6 +1,7 @@
 package com.provider;
 
 import com.alibaba.dubbo.config.spring.context.annotation.EnableDubbo;
+import com.compensate.annotation.EnableCompensation;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +51,7 @@ public class Provider {
     }
 
     @Configuration
+    @EnableCompensation
     @EnableDubbo(scanBasePackages = "com.provider.impl")
     @PropertySource("classpath:/properties/provider.properties")
     static class ProviderConfiguration {

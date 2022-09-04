@@ -13,6 +13,6 @@
 
     <dubbo:protocol port="20880" name="dubbo"/>
 
-    <dubbo:reference interface="com.api.service.DemoService" id="demoService" retries="0" timeout="33000000"/>
+    <dubbo:reference interface="com.lee.service.DemoService" id="demoService" retries="0" timeout="33000000" />
 
 </beans>

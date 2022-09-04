@@ -8,6 +8,6 @@ public class MethodBeforeAdviser implements MethodBeforeAdvice {
 
     @Override
     public void before(Method method, Object[] args, Object target) {
-        System.out.println(String.format("代理，执行方法[{%s}]", method.getName()));
+        System.out.println(String.format("========代理，执行方法[{%s}]", method.getName()));
     }
 }

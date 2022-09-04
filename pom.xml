@@ -23,6 +23,7 @@
         <module>netty</module>
         <module>api</module>
         <module>learning</module>
+        <module>retry-core</module>
     </modules>
 
     <properties>
