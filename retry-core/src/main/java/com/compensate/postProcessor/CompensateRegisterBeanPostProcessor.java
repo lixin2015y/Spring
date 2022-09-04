@@ -4,6 +4,7 @@ import com.compensate.annotation.Compensation;
 import com.compensate.api.CompensationCallBack;
 import com.compensate.supports.AnnotationMethodCheckInClassResolver;
 import com.compensate.supports.CompensateJdkProxy;
+import com.compensate.supports.CompensationJdkProxy;
 import com.compensate.supports.DubboUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -33,8 +34,10 @@ public class CompensateRegisterBeanPostProcessor implements BeanPostProcessor {
             Method method = entry.getKey();
             Compensation compensation = (Compensation) entry.getValue();
             Class<?>[] parameterTypes = method.getParameterTypes();
-            CompensationCallBack callBackResponse = new CompensateJdkProxy(bean, method, parameterTypes, compensation).newInstance();
-            DubboUtil.register(callBackResponse, compensation.code(), CompensationCallBack.class);
+
+            CompensationCallBack proxyInstance = new CompensationJdkProxy(bean, method, parameterTypes, compensation).newInstance();
+
+            DubboUtil.register(proxyInstance, "aaaa", CompensationCallBack.class);
         }
         return bean;
     }

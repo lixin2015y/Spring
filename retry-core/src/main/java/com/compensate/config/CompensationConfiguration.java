@@ -6,6 +6,7 @@ import com.compensate.postProcessor.CompensateRegisterBeanPostProcessor;
 import com.compensate.supports.SpringContextHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 
 
@@ -25,6 +26,7 @@ public class CompensationConfiguration {
     }
 
     @Bean
+    @DependsOn({"springContextHolder"})
     public CompensateRegisterBeanPostProcessor compensationPostProcessor() {
         return new CompensateRegisterBeanPostProcessor();
     }

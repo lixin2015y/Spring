@@ -1,5 +1,6 @@
 package com.lee.config;
 
+import com.compensate.annotation.EnableCompensation;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 @MapperScan("com.lee.dao")
 @Configuration
+@EnableCompensation
 public class DataSourceConfig {
 
     @Bean("test")

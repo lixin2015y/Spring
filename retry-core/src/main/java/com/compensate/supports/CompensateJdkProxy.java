@@ -76,7 +76,11 @@ public class CompensateJdkProxy implements InvocationHandler, Serializable {
         if (classLoader == null) {
             classLoader = Thread.currentThread().getContextClassLoader();
         }
-        CompensationCallBack proxyBean = (CompensationCallBack) Proxy.newProxyInstance(classLoader, this.interfaces, this);
+        CompensationCallBack proxyBean = (CompensationCallBack) Proxy.newProxyInstance(CompensationCallBack.class.getClassLoader(), this.interfaces, this);
         return proxyBean;
+    }
+
+    public static void main(String[] args) {
+
     }
 }
