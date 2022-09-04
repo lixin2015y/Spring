@@ -57,7 +57,7 @@ public class MySpringBootTest {
         reference.setVersion("0.0.1");
 
         GenericService genericService = reference.get();
-        Object result = genericService.$invoke("callBack", new String[] {"java.lang.String"}, new Object[] {"[\"lixin\"]"});
+        Object result = genericService.$invoke("callBack", new String[]{"java.lang.String"}, new Object[]{"[\"lixin\"]"});
         System.out.println(result);
 
 
