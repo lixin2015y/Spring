@@ -35,8 +35,6 @@ public class CompensationAspect {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        System.out.println(res);
-        System.out.println(args);
 
 
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
@@ -61,7 +59,7 @@ public class CompensationAspect {
             );
 
             // 发送数据
-            log.info("发送数据{}", compensationEntity);
+            log.info("发送数据{}", JSON.toJSONString(compensationEntity));
         }
     }
 

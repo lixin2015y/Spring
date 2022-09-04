@@ -1,7 +1,17 @@
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.rpc.service.GenericService;
+import com.compensate.api.CompensationCallBack;
+import com.compensate.supports.CallBackResponse;
+import com.compensate.supports.DubboUtil;
+import com.compensate.supports.SpringContextHolder;
 import com.lee.App;
+import com.lee.service.DemoService;
 import com.lee.service.StudentService;
 import com.lee.service.TeacherService;
 import com.lee.service.UserService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,58 +22,44 @@ import javax.annotation.Resource;
 
 public class MySpringBootTest {
 
-    class Solution {
-        public int uniquePathsWithObstacles(int[][] obstacleGrid) {
-            int m = obstacleGrid.length;
-            int n = obstacleGrid[0].length;
-            if (m == 1 && n == 1) return obstacleGrid[m - 1][n - 1] == 1 ? 0 : 1;
-            int[][] dp = new int[m][n];
-            int minGridIndex = m;
-            for (int i = 0; i < m; i++) {
-                if (obstacleGrid[i][0] == 1 || i >= minGridIndex) {
-                    minGridIndex = i;
-                    dp[i][0] = 0;
-                } else {
-                    dp[i][0] = 1;
-                }
-            }
-            minGridIndex = n;
-            for (int i = 0; i < n; i++) {
-                if (obstacleGrid[0][i] == 1 || i >= minGridIndex) {
-                    minGridIndex = i;
-                    dp[0][i] = 0;
-                } else {
-                    dp[0][i] = 1;
-                }
-            }
-            for (int i = 1; i < m; i++) {
-                for (int j = 1; j < n; j++) {
-                    if (obstacleGrid[i][j] == 1) continue;
-                    // 这里有可能是堵死了
-                    if (obstacleGrid[i][j - 1] == 0) {
-                        // 上方未堵死
-                        dp[i][j] = dp[i][j] + dp[i][j - 1];
-                    }
-                    // 左边未堵死
-                    if (obstacleGrid[i - 1][j] == 0 ) {
-                        dp[i][j] = dp[i][j] + dp[i - 1][j];
-                    }
+    ApplicationConfig applicationConfig = new ApplicationConfig();
 
-                }
-            }
-            return dp[m - 1][n - 1];
-        }
+    RegistryConfig registryConfig = new RegistryConfig();
 
+
+    @Before
+    public void before() {
+        registryConfig.setAddress("zookeeper://172.16.2.218:2181");
+        applicationConfig.setName("consumer");
     }
 
     @Test
     public void test() {
-        Solution solution = new Solution();
-        int[][] ints = new int[][]{{0, 0, 0, 0, 0}, {0, 0, 0, 0, 1}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 0}};
-
-        int i = solution.uniquePathsWithObstacles(ints);
-        System.out.println(i);
-
+        ReferenceConfig<CompensationCallBack> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setApplication(applicationConfig);
+        referenceConfig.setRegistry(registryConfig);
+        referenceConfig.setInterface(CompensationCallBack.class);
+        referenceConfig.setGroup("lixin-group");
+        referenceConfig.setVersion("0.0.1");
+        CompensationCallBack compensationCallBack = referenceConfig.get();
+        CallBackResponse callBackResponse = compensationCallBack.callBack("[\"lixin\"]");
+        System.out.println(callBackResponse);
     }
 
+    @Test
+    public void test3() {
+        ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
+        reference.setApplication(applicationConfig);
+        reference.setRegistry(registryConfig);
+        reference.setInterface("com.compensate.api.CompensationCallBack");
+        reference.setGeneric(true);
+        reference.setGroup("lixin-group");
+        reference.setVersion("0.0.1");
+
+        GenericService genericService = reference.get();
+        Object result = genericService.$invoke("callBack", new String[] {"java.lang.String"}, new Object[] {"[\"lixin\"]"});
+        System.out.println(result);
+
+
+    }
 }

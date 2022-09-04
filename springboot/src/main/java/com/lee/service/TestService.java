@@ -5,5 +5,5 @@ import org.springframework.context.annotation.Primary;
 import java.util.Map;
 
 public interface TestService {
-    Map<String, String> test();
+    Map<String, String> test(String id);
 }
