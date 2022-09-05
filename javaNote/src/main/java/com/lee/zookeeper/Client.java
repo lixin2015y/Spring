@@ -1,18 +1,17 @@
 package com.lee.zookeeper;
 
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.*;
-import org.checkerframework.checker.guieffect.qual.SafeType;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @className: Client
@@ -26,13 +25,7 @@ public class Client {
     @Before
     public void connect() throws IOException, InterruptedException {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        zk = new ZooKeeper("172.16.2.218:2181", 5000, watchedEvent -> {
-            log.info("接收到事件通知，{}", JSON.toJSONString(watchedEvent));
-            if (watchedEvent.getType() == Watcher.Event.EventType.None
-                    && watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                countDownLatch.countDown();
-            }
-        });
+        zk = new ZooKeeper("172.16.2.218:2181", 5000, null);
         log.info("链接中。。。。。。");
         countDownLatch.wait();
         log.info("链接成功！！！！当前会话id：{}, 当前会话秘钥：{}", zk.getSessionId(), zk.getSessionPasswd());
@@ -41,20 +34,25 @@ public class Client {
 
     @Test
     public void test() throws InterruptedException, KeeperException {
-        String s = zk.create("/lixin/test1", "lixin".getBytes(), null, CreateMode.EPHEMERAL);
+        Stat stat = zk.setData("/lixin/test1", "lixin".getBytes(), 2);
+        System.out.println(stat);
 
     }
 
 
     @Test
     public void test2() throws InterruptedException, KeeperException {
-        zk.addWatch("/lixin/test1/", AddWatchMode.PERSISTENT_RECURSIVE);
-
+        zk.getData("/lixin/credit", new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
+                System.out.println(event.getPath());
+            }
+        }, null);
     }
 
     @After
-    public void close() throws InterruptedException {
-
+    public void close() throws InterruptedException, KeeperException {
         zk.close();
+
     }
 }
