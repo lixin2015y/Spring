@@ -24,6 +24,7 @@ public class DubboUtil{
         serviceConfig.setInterface(interfaceClazz);
         serviceConfig.setGroup(group);
         serviceConfig.setVersion(version);
+
         serviceConfig.export();
     }
 

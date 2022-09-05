@@ -36,11 +36,11 @@ public class CompensationJdkProxy implements InvocationHandler, Serializable {
 
     private CompensationInfo compensationInfo;
 
-    public CompensationJdkProxy(Object proxyBean, Method proxyMethod, Class<?>[] parameterTypes, Compensation annotation ) {
+    public CompensationJdkProxy(Object proxyBean, Method proxyMethod, Class<?>[] parameterTypes, Compensation annotation) {
         try {
             this.proxyBean = proxyBean;
-        }catch (Exception e){
-            logger.error("clone proxy bean fail...",e);
+        } catch (Exception e) {
+            logger.error("clone proxy bean fail...", e);
         }
 
         this.proxyMethod = proxyMethod;
@@ -56,34 +56,35 @@ public class CompensationJdkProxy implements InvocationHandler, Serializable {
         Throwable throwable = null;
         Object result = null;
         try {
-            if (args == null){
+            if (args == null) {
                 return CallBackResponse.fail("参数不可为空！");
             }
             JSONArray paramData = null;
             try {
                 paramData = JSON.parseArray(args[0].toString());
-            }catch (Exception e){
+            } catch (Exception e) {
                 return CallBackResponse.fail("入参格式不正确，参数转换数组失败！请使用JSON.toJSONString(Object[] param)结果为入参");
             }
             Integer actualParamNum = paramData.size();
-            Integer methodParamNum = this.parameterTypes.length;;
+            Integer methodParamNum = this.parameterTypes.length;
+            ;
             String methodName = this.proxyMethod.getName();
-            if (actualParamNum != methodParamNum){
-                return CallBackResponse.fail( String.format("参数不匹配，代理执行%s方法失败！代理参数个数:%d,实际传参个数:%d",methodName,methodParamNum,actualParamNum));
+            if (actualParamNum != methodParamNum) {
+                return CallBackResponse.fail(String.format("参数不匹配，代理执行%s方法失败！代理参数个数:%d,实际传参个数:%d", methodName, methodParamNum, actualParamNum));
             }
             params = new Object[actualParamNum];
-            for (int i = 0; i < actualParamNum; i++){
-                params[i] = JSON.parseObject(JSON.toJSONString(paramData.get(i), SerializerFeature.WriteMapNullValue),this.parameterTypes[i]);
+            for (int i = 0; i < actualParamNum; i++) {
+                params[i] = JSON.parseObject(JSON.toJSONString(paramData.get(i), SerializerFeature.WriteMapNullValue), this.parameterTypes[i]);
             }
 
             result = this.proxyMethod.invoke(this.proxyBean, params);
-        }catch (InvocationTargetException e){
+        } catch (InvocationTargetException e) {
             throwable = e.getTargetException();
-        }catch (Exception e){
+        } catch (Exception e) {
             throwable = e;
-        }catch (Throwable e){
+        } catch (Throwable e) {
             throwable = e;
-        }finally {
+        } finally {
 
         }
 
@@ -113,21 +114,19 @@ public class CompensationJdkProxy implements InvocationHandler, Serializable {
 
 //            return !matchResult.get() ? CallBackResponse.success() : CallBackResponse.fail("仍满足需要补偿的条件!");
             return CallBackResponse.success();
-        }finally {
+        } finally {
 //            LogRecordContext.clear();
         }
 
     }
 
-    public  CompensationCallBack newInstance(){
+    public CompensationCallBack newInstance() {
 
         ClassLoader classLoader = this.proxyBean.getClass().getClassLoader();
-        if (classLoader == null){
+        if (classLoader == null) {
             classLoader = Thread.currentThread().getContextClassLoader();
         }
-        CompensationCallBack proxyBean = (CompensationCallBack) Proxy.newProxyInstance(classLoader,
-                this.interfaces,
-                this);
+        CompensationCallBack proxyBean = (CompensationCallBack) Proxy.newProxyInstance(classLoader, this.interfaces, this);
         return proxyBean;
     }
 

@@ -1,6 +1,7 @@
 package com.lee.controller;
 
 import com.lee.entity.User;
+import com.lee.service.TestService;
 import com.lee.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,16 @@ public class UserController {
     @GetMapping("selectOne")
     public User selectOne(Integer id) {
         return this.userService.queryById(id);
+    }
+
+
+    @Resource
+    TestService testService;
+
+    @GetMapping("testService")
+    public String testService() {
+        testService.test("1");
+        return "a";
     }
 
 }
