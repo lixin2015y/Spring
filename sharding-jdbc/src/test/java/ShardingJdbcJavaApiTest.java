@@ -15,9 +15,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class ShardingJdbcJavaApiTest {
 
@@ -33,13 +33,9 @@ public class ShardingJdbcJavaApiTest {
          *
          */
 
-        DataSource druidDs1 = buildDruidDataSource(
-                "jdbc:mysql://localhost:3306/db1?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=true&serverTimezone=UTC",
-                "root", "123456");
+        DataSource druidDs1 = buildDruidDataSource("jdbc:mysql://localhost:3306/db1?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=true&serverTimezone=UTC", "root", "123456");
 
-        DataSource druidDs2 = buildDruidDataSource(
-                "jdbc:mysql://localhost:3306/db2?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=true&serverTimezone=UTC",
-                "root", "123456");
+        DataSource druidDs2 = buildDruidDataSource("jdbc:mysql://localhost:3306/db2?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=true&serverTimezone=UTC", "root", "123456");
         // 配置真实数据源
         Map<String, DataSource> dataSourceMap = new HashMap<>();
         // 添加数据源.
@@ -68,8 +64,7 @@ public class ShardingJdbcJavaApiTest {
         //打印sql语句，生产环境关闭
         p.setProperty("sql.show", Boolean.TRUE.toString());
 
-        dataSource = ShardingDataSourceFactory.createDataSource(
-                dataSourceMap, shardingRuleConfig, p);
+        dataSource = ShardingDataSourceFactory.createDataSource(dataSourceMap, shardingRuleConfig, p);
 
     }
 
@@ -93,8 +88,7 @@ public class ShardingJdbcJavaApiTest {
         TableRuleConfiguration tableRuleConfig = new TableRuleConfiguration(logicTable, actualDataNodes);
         // 设置分表策略
         // inline 模式
-        ShardingStrategyConfiguration tableShardingStrategy =
-                new InlineShardingStrategyConfiguration("user_id", "t_user_$->{user_id % 2}");
+        ShardingStrategyConfiguration tableShardingStrategy = new InlineShardingStrategyConfiguration("user_id", "t_user_$->{user_id % 2}");
         tableRuleConfig.setTableShardingStrategyConfig(tableShardingStrategy);
 
         // 配置分库策略（Groovy表达式配置db规则）
@@ -141,9 +135,7 @@ public class ShardingJdbcJavaApiTest {
 
     @Test
     public void test4() throws SQLException {
-        DataSource ebsDb = buildDruidDataSource(
-                "jdbc:mysql://172.16.2.204:3306/ebs?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&rewriteBatchedStatements=true&serverTimezone=UTC&allowMultiQueries=true",
-                "root", "byxf1qaz");
+        DataSource ebsDb = buildDruidDataSource("jdbc:mysql://172.16.2.204:3306/ebs?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&rewriteBatchedStatements=true&serverTimezone=UTC&allowMultiQueries=true", "root", "byxf1qaz");
         Connection connection = ebsDb.getConnection();
         connection.setAutoCommit(false);
         PreparedStatement preparedStatement = connection.prepareStatement("insert into ebs.user(id, out_id, filed1, filed2) values (?, ?, ?, ?)");
@@ -169,6 +161,24 @@ public class ShardingJdbcJavaApiTest {
         connection.commit();
         System.out.println("完成" + stopWatch.getTotalTimeSeconds() + "s");
 
+    }
+
+
+    @Test
+    public void test3() {
+        int dsCount = 4;
+        int tableCount = 4;
+        List<String> list = new ArrayList<>();
+        for (int value = 0; value < 100; value++) {
+            long index = value % dsCount;
+            long tableIndex = value / dsCount % tableCount;
+            System.out.println(index + ":" + tableIndex);
+            list.add(index + ":" + tableIndex);
+        }
+        Map<String, List<String>> collect = list.stream().collect(Collectors.groupingBy(s -> s));
+        for (Map.Entry<String, List<String>> stringListEntry : collect.entrySet()) {
+            System.out.println(stringListEntry.getKey() + "=" + stringListEntry.getValue().size());
+        }
     }
 
 }

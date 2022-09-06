@@ -126,4 +126,15 @@ public class RedisTemplateTest {
         }
     }
 
+    @Test
+    public void test8() {
+        for (int i = 0; i < 100; i++) {
+            jedisClusterPlus.zadd("lixin", 100 + i, i + "");
+        }
+        Long count = jedisClusterPlus.zremrangeByScore("lixin", 100, 200);
+        System.out.println(count);
+
+
+    }
+
 }
