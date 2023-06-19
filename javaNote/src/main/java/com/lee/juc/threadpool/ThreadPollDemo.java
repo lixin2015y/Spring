@@ -10,6 +10,7 @@ public class ThreadPollDemo {
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         ExecutorService executorService1 = Executors.newSingleThreadExecutor();
         ExecutorService executorService2 = Executors.newCachedThreadPool();
+        executorService2.shutdownNow();
 
         for (int i = 0; i < 10; i++) {
             executorService.execute(() -> {
