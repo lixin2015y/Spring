@@ -10,10 +10,10 @@ import java.io.File;
 public class Converter {
 
     public static void main(String[] args) throws Exception {
-        Instances allData = DataSource.read("C:/Users/lixin/Desktop/project/Spring/learning/src/main/resources/input/MIMIC_prediction(1).csv");
+        Instances allData = DataSource.read("/Users/lixin08_dxm/Desktop/ARDS临床分型.csv");
         ArffSaver saver = new ArffSaver();
         saver.setInstances(allData);
-        saver.setFile(new File("C:/Users/lixin/Desktop/project/Spring/learning/src/main/resources/output/stacking.arff"));
+        saver.setFile(new File("/Users/lixin08_dxm/Desktop/ARDS临床分型.arff"));
         saver.writeBatch();
         System.out.println("已经转化为arrf文件");
     }
