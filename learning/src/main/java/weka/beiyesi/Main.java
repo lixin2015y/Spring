@@ -13,7 +13,7 @@ public class Main {
         Classifier classifier = AdaBoostM1.forName("weka.classifiers.bayes.NaiveBayes", args);
         ArffLoader atf = new ArffLoader();
         // 读入训练文件
-        File inputFile = new File("/Users/lixin08_dxm/Documents/ARDS生理分型.arff");
+        File inputFile = new File("/Users/lixin08_dxm/Desktop/machine-learning/arff/ARDS生理分型.arff");
         System.out.println(inputFile.exists());
         atf.setFile(inputFile);
         Instances instancesTrain = atf.getDataSet();

@@ -834,15 +834,11 @@ public class Convert {
             }
             for (int i = 0; i < list1.size(); i++) {
                 if (i == 0) {
-                    if (list1.get(i).equals("?")) {
-                        System.out.println("1");
-                    } else {
-                        System.out.print(list1.get(i) + ",");
-                    }
+                    System.out.print(list1.get(i) + ",");
                 }
                 if (i == 1) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<100" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         Double i1 = Double.parseDouble(list1.get(1));
                         if (i1 < 100) {
@@ -859,7 +855,7 @@ public class Convert {
                 }
                 if (i == 2) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<1" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index == 1) {
@@ -876,7 +872,7 @@ public class Convert {
                 // @attribute D0_pH {<7.3, 7.3-7.4, 7.4-7.5, >7.5}
                 if (i == 3) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<7.3" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         double index = Double.parseDouble(list1.get(i));
                         if (index < 7.3D) {
@@ -893,7 +889,7 @@ public class Convert {
                 // <50, 50-80, 80-110, >110
                 if (i == 4) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<50" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 50) {
@@ -911,7 +907,7 @@ public class Convert {
                 // {<30, 30-40, 40-50, >50}
                 if (i == 5) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<30" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 30) {
@@ -928,7 +924,7 @@ public class Convert {
                 // @attribute D0_HCO3 {<18, 18-22, 22-26, >26}
                 if (i == 6) {
                     if (list1.get(i).equals("?")) {
-                        System.out.print("<18" + ",");
+                        System.out.print("?" + ",");
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 18) {
