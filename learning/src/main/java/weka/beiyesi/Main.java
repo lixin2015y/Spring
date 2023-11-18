@@ -22,4 +22,7 @@ public class Main {
         classifier.buildClassifier(instancesTrain);
         SerializationHelper.write("/Users/lixin08_dxm/Desktop/machine-learning/models/ARDS生理分型.model", classifier);
     }
+
+
+
 }
