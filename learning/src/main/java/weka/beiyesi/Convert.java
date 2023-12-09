@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import java_cup.internal_error;
-import weka.core.pmml.jaxbbindings.INTERPOLATIONMETHOD;
-
 public class Convert {
 
     public static void main(String[] args) {
@@ -842,13 +839,13 @@ public class Convert {
                     } else {
                         Double i1 = Double.parseDouble(list1.get(1));
                         if (i1 < 100) {
-                            System.out.print("<100" + ",");
+                            System.out.print("99" + ",");
                         } else if (i1 >= 100 && i1 < 200) {
-                            System.out.print("100-200" + ",");
+                            System.out.print("150" + ",");
                         } else if (i1 >= 200 && i1 < 300) {
-                            System.out.print("200-300" + ",");
+                            System.out.print("250" + ",");
                         } else {
-                            System.out.print(">300" + ",");
+                            System.out.print("301" + ",");
                         }
                     }
 
@@ -859,13 +856,13 @@ public class Convert {
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index == 1) {
-                            System.out.print("<1" + ",");
+                            System.out.print("1" + ",");
                         } else if (index == 2) {
-                            System.out.print("1-2" + ",");
+                            System.out.print("2" + ",");
                         } else if (index == 3) {
-                            System.out.print("2-3" + ",");
+                            System.out.print("3" + ",");
                         } else {
-                            System.out.print(">3" + ",");
+                            System.out.print("4" + ",");
                         }
                     }
                 }
@@ -876,13 +873,13 @@ public class Convert {
                     } else {
                         double index = Double.parseDouble(list1.get(i));
                         if (index < 7.3D) {
-                            System.out.print("<7.3" + ",");
+                            System.out.print("7.2" + ",");
                         } else if (index >= 7.3D && index < 7.4) {
-                            System.out.print("7.3-7.4" + ",");
+                            System.out.print("7.4" + ",");
                         } else if (index >= 7.4 && index < 7.5) {
-                            System.out.print("7.4-7.5" + ",");
+                            System.out.print("7.5" + ",");
                         } else {
-                            System.out.print(">7.5" + ",");
+                            System.out.print("7.6" + ",");
                         }
                     }
                 }
@@ -893,13 +890,13 @@ public class Convert {
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 50) {
-                            System.out.print("<50" + ",");
+                            System.out.print("49" + ",");
                         } else if (index >= 50 && index < 80) {
-                            System.out.print("50-80" + ",");
+                            System.out.print("51" + ",");
                         } else if (index >= 80 && index < 110) {
-                            System.out.print("80-110" + ",");
+                            System.out.print("81" + ",");
                         } else {
-                            System.out.print(">110" + ",");
+                            System.out.print("111" + ",");
                         }
                     }
 
@@ -911,13 +908,13 @@ public class Convert {
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 30) {
-                            System.out.print("<30" + ",");
+                            System.out.print("29" + ",");
                         } else if (index >= 30 && index < 40) {
-                            System.out.print("30-40" + ",");
+                            System.out.print("31" + ",");
                         } else if (index >= 40 && index < 50) {
-                            System.out.print("40-50" + ",");
+                            System.out.print("41" + ",");
                         } else {
-                            System.out.print(">50" + ",");
+                            System.out.print("51" + ",");
                         }
                     }
                 }
@@ -928,13 +925,13 @@ public class Convert {
                     } else {
                         Double index = Double.parseDouble(list1.get(i));
                         if (index < 18) {
-                            System.out.print("<18" + ",");
+                            System.out.print("17" + ",");
                         } else if (index >= 18 && index < 22) {
-                            System.out.print("18-22" + ",");
+                            System.out.print("19" + ",");
                         } else if (index >= 22 && index < 26) {
-                            System.out.print("22-26" + ",");
+                            System.out.print("23" + ",");
                         } else {
-                            System.out.print(">26" + ",");
+                            System.out.print("27" + ",");
                         }
                     }
                 }

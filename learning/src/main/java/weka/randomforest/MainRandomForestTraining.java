@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -17,9 +16,12 @@ import weka.core.converters.ArffLoader;
 
 public class MainRandomForestTraining {
 
-    private static String modelPath = "/Users/lixin08_dxm/Desktop/machine-learning/models/ARDS临床分型.model";
+    private static String modelPath = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS临床分型.model";
 
-    private static String arffFilePath = "/Users/lixin08_dxm/Desktop/machine-learning/arff/ARDS临床分型.arff";
+    private static String arffFilePath = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS临床分型.arff";
+    private static String arffFilePathTest = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS临床分型-测试.arff";
+
+
 
     public static void main(String[] args) throws Exception {
 
@@ -46,16 +48,25 @@ public class MainRandomForestTraining {
         RandomForest classifier8 = (RandomForest) weka.core.SerializationHelper.read(modelPath);
         //        Instances instances = generatePopularInstance();
         classifier8.setSeed(12345);
-        File inputFile = new File(arffFilePath);
+        File inputFile = new File(arffFilePathTest);
         ArffLoader atf = new ArffLoader();
         atf.setFile(inputFile);
         // 读入训练文件
         Instances instances = atf.getDataSet();
         instances.setClassIndex(0);
-
+        int successCount = 0;
         for (int i = 0; i < instances.size(); i++) {
-            System.out.println(classifier8.classifyInstance(instances.instance(i)));
+            double d = classifier8.classifyInstance(instances.instance(i));
+            if (d <= 0.5) {
+                d = 0.0;
+            } else {
+                d = 1.0;
+            }
+            if (d == instances.get(i).classValue()) {
+                successCount++;
+            }
         }
+        System.out.println(successCount + "====" + instances.size());
     }
 
     private Instances generatePopularInstance() {
