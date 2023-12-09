@@ -1,5 +1,6 @@
 package weka.vote;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,16 +8,19 @@ import java.util.List;
 import org.junit.Test;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.Vote;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
+import weka.core.converters.ArffLoader;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class VoteModelBuilder {
 
-    private static String modelPath = "/Users/lixin08_dxm/Desktop/machine-learning/models/ARDS预后预警.model";
+    private static String modelPath = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS预后预警.model";
+    private static String arffFilePath = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS预后预警.arff";
 
-    private static String arffFilePath = "/Users/lixin08_dxm/Desktop/machine-learning/arff/ARDS预后预警.arff";
+    private static String arffFilePathTest = "/Users/lixin08_dxm/IdeaProjects/Spring/ARDS预后预警-test.arff";
 
     @Test
     public void buildModel() throws Exception {
@@ -38,6 +42,27 @@ public class VoteModelBuilder {
         // 训练模型
         vote.buildClassifier(data);
         SerializationHelper.write(modelPath, vote);
+    }
+
+    @Test
+    public void test() throws Exception {
+        Vote classifier8 = (Vote) weka.core.SerializationHelper.read(modelPath);
+        File inputFile = new File(arffFilePathTest);
+        ArffLoader atf = new ArffLoader();
+        atf.setFile(inputFile);
+        // 读入训练文件
+        Instances instances = atf.getDataSet();
+        instances.setClassIndex(0);
+        int successCount = 0;
+        for (int i = 0; i < instances.size(); i++) {
+            double d = classifier8.classifyInstance(instances.instance(i));
+            if (d == instances.get(i).classValue()) {
+                successCount++;
+            }
+            System.out.println(d + "===" + instances.get(i).classValue());
+        }
+        System.out.println(successCount + "====" + instances.size());
+
     }
 
     @Test
