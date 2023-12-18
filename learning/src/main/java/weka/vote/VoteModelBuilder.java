@@ -10,6 +10,8 @@ import org.junit.Test;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.Vote;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ArffLoader;
@@ -34,8 +36,7 @@ public class VoteModelBuilder {
         Vote vote = new Vote();
 
         vote.setClassifiers(
-                new Classifier[] {new weka.classifiers.trees.RandomForest(),
-                        new weka.classifiers.bayes.NaiveBayes()
+                new Classifier[] {new weka.classifiers.trees.RandomForest(), new weka.classifiers.bayes.NaiveBayes()
                         //                        , new weka.classifiers.functions.SMO()
                 });
 
@@ -47,7 +48,7 @@ public class VoteModelBuilder {
     @Test
     public void test() throws Exception {
         Vote classifier8 = (Vote) weka.core.SerializationHelper.read(modelPath);
-        File inputFile = new File(arffFilePathTest);
+        File inputFile = new File(arffFilePath);
         ArffLoader atf = new ArffLoader();
         atf.setFile(inputFile);
         // 读入训练文件
@@ -62,6 +63,40 @@ public class VoteModelBuilder {
             System.out.println(d + "===" + instances.get(i).classValue());
         }
         System.out.println(successCount + "====" + instances.size());
+
+    }
+
+    @Test
+    public void test2() throws Exception {
+        Vote classifier8 = (Vote) weka.core.SerializationHelper.read(modelPath);
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("Cluster", Arrays.asList("0", "1")));
+        attributes.add(new Attribute("Age", Arrays.asList("<57", ">=57")));
+        attributes.add(new Attribute("WBC", Arrays.asList("<2.5", "2.5-18", ">18")));
+        attributes.add(new Attribute("Neu", Arrays.asList("<92", ">=92")));
+        attributes.add(new Attribute("LYM", Arrays.asList("<=9", ">9")));
+        attributes.add(new Attribute("BUN", Arrays.asList("<12", ">=12")));
+        attributes.add(new Attribute("PT", Arrays.asList("<16", ">=16")));
+        attributes.add(new Attribute("PCO2", Arrays.asList("<27", "27-46", ">46")));
+        attributes.add(new Attribute("PFR", Arrays.asList("<=150", "＞150")));
+        attributes.add(new Attribute("Lac", Arrays.asList("<2.8", ">=2.8")));
+        attributes.add(new Attribute("Fluid_balance", Arrays.asList("<2000", ">=2000")));
+        Instances instances = new Instances("repo_popular", attributes, 0);
+        instances.setClassIndex(0);
+        DenseInstance instance = new DenseInstance(attributes.size());
+        instance.setDataset(instances);
+        instance.setValue(1, "<57");
+        instance.setValue(2, "2.5-18");
+        instance.setValue(3, "<92");
+        instance.setValue(4, ">9");
+        instance.setValue(5, "<12");
+        instance.setValue(6, ">=16");
+        instance.setValue(7, "27-46");
+        instance.setValue(8, "＞150");
+        instance.setValue(9, "<2.8");
+        instance.setValue(10, ">=2000");
+        double v = classifier8.classifyInstance(instance);
+        System.out.println(v);
 
     }
 
