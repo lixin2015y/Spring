@@ -1,11 +1,13 @@
 package com.lee.algorithm.sort;
 
 import com.lee.algorithm.utils.ArrayUtils;
+
 import org.apache.xmlbeans.impl.xb.xmlconfig.impl.QnameconfigImpl;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.xml.stream.events.EndDocument;
+
 import java.util.Arrays;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -17,9 +19,8 @@ import java.util.TreeSet;
  **/
 public class QuickSort {
 
-
-    int[] arr = new int[]{1, 4, 3, 2, 6, 5, 12, 45, 76, 3, 5, 7, 4};
-//    int[] arr = new int[]{1, 2, 3, 4, 5, 6, 7};
+    int[] arr = new int[] {4, 3, 2, 1, 5, 7, 6};
+    //    int[] arr = new int[]{1, 2, 3, 4, 5, 6, 7};
 
     /**
      * 冒泡排序
@@ -41,11 +42,7 @@ public class QuickSort {
      */
     @Test
     public void test2() {
-        quickSortMe(arr, 0, arr.length - 1);
-//        quickSort2(arr, 0, arr.length - 1);
-//        quickSort3(arr, 0, arr.length - 1);
-//        quickSortNotDiGui(arr, 0, arr.length - 1);
-//        quickSortWithThreePivot(arr, 0, arr.length - 1);
+        quickSortWithThreePivot(arr, 0, arr.length - 1);
         System.out.println(Arrays.toString(arr));
     }
 
@@ -73,20 +70,6 @@ public class QuickSort {
             quickSortMe(arr, l + 1, end);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public void quickSort2(int[] arr, int start, int end) {
         if (start < end) {
@@ -118,7 +101,6 @@ public class QuickSort {
         }
     }
 
-
     public void quickSort3(int[] arr, int start, int end) {
         if (start < end) {
             int l = start;
@@ -143,7 +125,6 @@ public class QuickSort {
             quickSort3(arr, start, l - 1);
             quickSort3(arr, l + 1, end);
         }
-
 
     }
 
@@ -235,6 +216,5 @@ public class QuickSort {
             this.r = r;
         }
     }
-
 
 }
