@@ -10,10 +10,10 @@ import java.io.File;
 public class Converter {
 
     public static void main(String[] args) throws Exception {
-        Instances allData = DataSource.read("/Users/lixin08_dxm/Desktop/ARDS临床分型.csv");
+        Instances allData = DataSource.read("/Users/lixin08_dxm/Desktop/气压伤_原始数据.csv");
         ArffSaver saver = new ArffSaver();
         saver.setInstances(allData);
-        saver.setFile(new File("/Users/lixin08_dxm/Desktop/ARDS临床分型.arff"));
+        saver.setFile(new File("/Users/lixin08_dxm/Desktop/气压伤_原始数据.arff"));
         saver.writeBatch();
         System.out.println("已经转化为arrf文件");
     }
